@@ -18,6 +18,10 @@ class UsernameAndPasswordViewController: UIViewController, UITextFieldDelegate {
     
     let db = Firestore.firestore()
     
+    let locationManager = LocationManager()
+    
+    var user: User?
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         return false
@@ -29,6 +33,8 @@ class UsernameAndPasswordViewController: UIViewController, UITextFieldDelegate {
         self.usernameField.delegate = self
         self.passwordField.delegate = self
         
+        setCurrentLocation()
+        
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
         view.addGestureRecognizer(tap)
     }
@@ -38,6 +44,25 @@ class UsernameAndPasswordViewController: UIViewController, UITextFieldDelegate {
     }
     
     var usernameAlreadyExists: Bool = false
+    
+    var location: String = ""
+    private func setCurrentLocation() {
+        guard let exposedLocation = self.locationManager.exposedLocation else {
+            print("*** Error in \(#function): exposedLocation is nil")
+            return
+        }
+        
+        self.locationManager.getPlace(for: exposedLocation) { placemark in
+            guard let placemark = placemark else { return }
+            
+            if let town = placemark.locality {
+                self.location += "\(town)"
+            }
+            if let state = placemark.administrativeArea {
+                self.location += ", \(state)"
+            }
+        }
+    }
     
     @IBAction func finishButton(_ sender: Any) {
         if usernameField.text!.isEmpty || passwordField.text!.isEmpty {
@@ -63,23 +88,27 @@ class UsernameAndPasswordViewController: UIViewController, UITextFieldDelegate {
             
             if usernameAlreadyExists == false {
                 
-                let fullName = UserDefaults.standard.string(forKey: "fullName")
-                let age = UserDefaults.standard.integer(forKey: "age")
-                let email = UserDefaults.standard.string(forKey: "email")
+                let fullName = user!.firstName + " " + user!.lastName
                 
                 UserDefaults.standard.set(usernameField.text!, forKey: "username")
+                UserDefaults.standard.set(location, forKey: "cityAndState")
+                UserDefaults.standard.set(fullName, forKey: "fullName")
+                UserDefaults.standard.set(self.user!.email, forKey: "email")
                 
-                db.collection("users").document("\(fullName!)").setData([
+                
+                db.collection("users").document("\(usernameField.text!)").setData([
                     
-                    "full name": fullName!,
-                    "age": age,
-                    "email address": email!,
-                    "username": usernameField.text!,
-                    "password": passwordField.text!,
-                    "twitter": "",
-                    "instagram": "",
-                    "youtube": "",
-                    "website": ""
+                    "Full Name": fullName,
+                    "Email Address": self.user!.email,
+                    "Username": usernameField.text!,
+                    "Password": passwordField.text!,
+                    "Twitter": "",
+                    "Instagram": "",
+                    "Youtube": "",
+                    "Website": "",
+                    "Locality": location,
+                    "Apple ID User Identifier": self.user!.id,
+                    "Profile Image URL": "No profile picture yet"
                     
                 ]) { err in
                     if let err = err {

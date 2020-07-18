@@ -11,17 +11,21 @@ import Firebase
 import FirebaseFirestore
 import FirebaseStorage
 import FirebaseUI
+import CoreLocation
 
 class MyAccountViewController: UIViewController {
 
     let db = Firestore.firestore()
     
     let fullName = UserDefaults.standard.string(forKey: "fullName")
+    let cityAndState = UserDefaults.standard.string(forKey: "cityAndState")
+    let username = UserDefaults.standard.string(forKey: "username")
+    
+    private let locationManager = LocationManager()
     
     @IBOutlet weak var profileImage: UIImageView!
     @IBOutlet var fullNameLabel: UILabel!
-    @IBOutlet var cityStateLabel: UILabel!
-
+    @IBOutlet weak var cityStateLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,6 +36,8 @@ class MyAccountViewController: UIViewController {
         getInformation()
         updatePicture()
         
+        fullNameLabel.text = fullName
+        cityStateLabel.text = cityAndState
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,6 +51,7 @@ class MyAccountViewController: UIViewController {
         getInformation()
         updatePicture()
     }
+    
     
     
     func getInformation() {

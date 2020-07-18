@@ -12,18 +12,19 @@ import FirebaseFirestore
 import FirebaseStorage
 
 class PictureEditViewController: UIViewController {
-
+    
     @IBOutlet weak var profileImage: UIImageView!
     @IBOutlet weak var savedLabel: UILabel!
     @IBOutlet weak var savingLabel: UILabel!
     
     let fullName = UserDefaults.standard.string(forKey: "fullName")
+    let username = UserDefaults.standard.string(forKey: "username")
     
     let db = Firestore.firestore()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         savedLabel.isHidden = true
         savingLabel.isHidden = true
         
@@ -64,7 +65,7 @@ class PictureEditViewController: UIViewController {
         savingLabel.isHidden = false
         
         let imageName = NSUUID().uuidString
-        let storageRef = Storage.storage().reference().child("profile images").child("\(fullName!) - profile image.png")
+        let storageRef = Storage.storage().reference().child("profile images").child("\(username!) - profile image.png")
         
         if let uploadData = UIImage.pngData(self.profileImage.image!)() {
             storageRef.putData(uploadData, metadata: nil, completion: { (metadata, error) in
@@ -79,7 +80,7 @@ class PictureEditViewController: UIViewController {
                         return
                     } else {
                         let url = url!
-                        self.db.collection("users").document("\(self.fullName!)").setData([ "profile image URL": "\(url)", "UUID": "\(imageName)" ], merge: true)
+                        self.db.collection("users").document("\(self.username!)").setData([ "Profile Image URL": "\(url)", "UUID": "\(imageName)" ], merge: true)
                         UserDefaults.standard.set("\(imageName)", forKey: "UID")
                         print("image uploaded, user updated!")
                         
@@ -89,15 +90,11 @@ class PictureEditViewController: UIViewController {
                                 print("image saved to device!")
                             }
                         }
-                        
                         self.showSavedImageCompletion()
                     }
-                    
                 })
-                
             })
         }
-        
     }
     
     func showSavedImageCompletion() {

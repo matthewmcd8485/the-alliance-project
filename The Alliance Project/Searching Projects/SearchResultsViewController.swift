@@ -78,7 +78,7 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let project = projectsArray[indexPath.row]
-        cell.textLabel?.font = UIFont(name:"AcherusGrotesque-Light", size: 30)
+        cell.textLabel?.font = UIFont(name:"AcherusGrotesque-Light", size: 22)
         cell.textLabel?.textColor = UIColor(named: "purpleColor")
         cell.backgroundColor = UIColor(named: "backgroundColors")
         cell.textLabel?.text = project
@@ -90,6 +90,9 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destination = segue.destination as? SelectedProjectViewController {
+            UserDefaults.standard.set(creatorUsernamesArray[tableView.indexPathForSelectedRow!.row], forKey: "selectedProjectUsername")
+            UserDefaults.standard.set(projectsArray[tableView.indexPathForSelectedRow!.row], forKey: "projectTitle")
+            
             destination.projectTitle = projectsArray[tableView.indexPathForSelectedRow!.row]
             destination.projectCreatorName = creatorNamesArray[tableView.indexPathForSelectedRow!.row]
             destination.projectCreatorUsername = creatorUsernamesArray[tableView.indexPathForSelectedRow!.row]

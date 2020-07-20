@@ -27,8 +27,8 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var categoryLabel: UILabel!
     @IBOutlet weak var viewsLabel: UILabel!
-    @IBOutlet weak var localityLabel: UILabel!
     @IBOutlet weak var interestedInHelpingLabel: UILabel!
+    @IBOutlet weak var userDetailsButton: UIButton!
     
     @IBOutlet weak var profileImageView: UIImageView!
     
@@ -39,8 +39,12 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
         profileImageView.layer.cornerRadius = 30
         profileImageView.clipsToBounds = true
         
+        projectCreatorUsername = UserDefaults.standard.string(forKey: "selectedProjectUsername")
+        projectTitle = UserDefaults.standard.string(forKey: "projectTitle")
+        
         loadUserImage()
         loadProjectData()
+        
     }
     
     
@@ -111,7 +115,6 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
                         self.categoryLabel.text = document.get("Category") as? String
                         self.dateCreatedLabel.text = "Created by \(self.projectCreatorUsername!) on \(document.get("Date Created")!)"
                         self.descriptionLabel.text = document.get("Project Description") as? String
-                        self.localityLabel.text = document.get("Locality") as? String
                         self.interestedInHelpingLabel.text = "Interested in helping? Let \(self.projectCreatorUsername!) know!"
                     }
                 }
@@ -152,6 +155,9 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destination = segue.destination as? SearchResultsViewController {
             destination.category = projectCategory
+        }
+        if let destination = segue.destination as? UserDetailsViewController {
+            destination.projectCreatorEmail = creatorEmail!
         }
     }
 }

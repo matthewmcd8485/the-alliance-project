@@ -24,7 +24,7 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
         pickerView.delegate = self
         pickerView.dataSource = self
         
-        pickerData = ["Pick A Category", "Application", "Art", "Athletics", "Music", "Photography", "Technology", "Video Creation", "Website Design"]
+        pickerData = ["Pick A Category", "Application", "Art", "Athletics", "Automotive", "Engineering", "Health & Fitness","Music", "Photography", "Technology", "Video Creation", "Website Design"]
     }
 
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

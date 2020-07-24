@@ -68,6 +68,16 @@ class ExistingAccountViewController: UIViewController, UITextFieldDelegate {
                                 let fullName = document.get("Full Name")
                                 self.email = document.get("Email Address") as! String
                                 let locality = document.get("Locality")
+                                
+                                let instagram = document.get("Instagram") as! String
+                                let twitter = document.get("Twitter") as! String
+                                let youtube = document.get("YouTube") as! String
+                                let website = document.get("Website") as! String
+                                UserDefaults.standard.set(instagram, forKey: "instagram")
+                                UserDefaults.standard.set(twitter, forKey: "twitter")
+                                UserDefaults.standard.set(youtube, forKey: "youtube")
+                                UserDefaults.standard.set(website, forKey: "website")
+                                
                                 let profileImageURL: String = document.get("Profile Image URL") as! String
                                 print(profileImageURL)
                                 

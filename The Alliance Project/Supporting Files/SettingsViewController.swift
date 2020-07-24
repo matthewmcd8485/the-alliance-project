@@ -15,7 +15,11 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        deleteDataButton.titleLabel?.numberOfLines = 2
+        deleteDataButton.titleLabel?.lineBreakMode = .byWordWrapping
     }
+    
+    @IBOutlet weak var deleteDataButton: UIButton!
     
     @IBAction func viewSettings(_ sender: Any) {
         UIApplication.shared.open(URL.init(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
@@ -49,6 +53,10 @@ class SettingsViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Log Out Normally", style: .default, handler: {action in
             UserDefaults.standard.set(false, forKey: "loggedIn")
+            UserDefaults.standard.set("", forKey: "instagram")
+            UserDefaults.standard.set("", forKey: "twitter")
+            UserDefaults.standard.set("", forKey: "youtube")
+            UserDefaults.standard.set("", forKey: "website")
             
             DispatchQueue.main.async {
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
@@ -69,6 +77,11 @@ class SettingsViewController: UIViewController {
                     print("Error removing document: \(err)")
                 } else {
                     print("Document successfully removed!")
+                    
+                    UserDefaults.standard.set("", forKey: "instagram")
+                    UserDefaults.standard.set("", forKey: "twitter")
+                    UserDefaults.standard.set("", forKey: "youtube")
+                    UserDefaults.standard.set("", forKey: "website")
                 }
             }
             

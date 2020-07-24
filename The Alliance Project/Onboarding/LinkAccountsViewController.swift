@@ -64,6 +64,16 @@ class LinkAccountsViewController: UIViewController, UITextFieldDelegate {
                             self.db.collection("users").document("\(username!)").setData(["Apple ID User Identifier": "\(self.id!)"], merge: true)
                             self.fullName = document.get("Full Name") as! String
                             self.cityAndState = document.get("Locality") as! String
+                            
+                            let instagram = document.get("Instagram") as! String
+                            let twitter = document.get("Twitter") as! String
+                            let youtube = document.get("YouTube") as! String
+                            let website = document.get("Website") as! String
+                            UserDefaults.standard.set(instagram, forKey: "instagram")
+                            UserDefaults.standard.set(twitter, forKey: "twitter")
+                            UserDefaults.standard.set(youtube, forKey: "youtube")
+                            UserDefaults.standard.set(website, forKey: "website")
+                            
                             let profileImageURL: String = document.get("Profile Image URL") as! String
                             print(profileImageURL)
                             

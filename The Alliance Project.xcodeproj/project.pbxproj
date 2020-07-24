@@ -811,7 +811,7 @@
 				BUNDLE_ID_SUFFIX = "";
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
 				INFOPLIST_FILE = "The Alliance Project/Info.plist";
@@ -834,7 +834,7 @@
 				BUNDLE_ID_SUFFIX = "";
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
 				INFOPLIST_FILE = "The Alliance Project/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -995,7 +995,7 @@
 				BUNDLE_ID_SUFFIX = .beta;
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
 				INFOPLIST_FILE = "The Alliance Project/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

@@ -140,9 +140,11 @@ class UserDetailsViewController: UIViewController {
     }
     
     @IBAction func youtubeButton(_ sender: Any) {
-        let alert = UIAlertController(title: "Hold Tight!", message: "I need to figure out how to link to people's YouTube accounts. It fails when there is a space in the channel name. Check back in the next build for a fix!", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        self.present(alert, animated: true, completion: nil)
+        if channelLabel.text != "Channel not linked" {
+            let application = UIApplication.shared
+            let webURL = URL(string: "\(youtubeChannel)")!
+            application.open(webURL)
+        }
     }
     
     @IBAction func twitterButton(_ sender: Any) {

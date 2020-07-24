@@ -30,16 +30,24 @@ class SocialMediaAccountsViewController: UIViewController {
     // CHECK CLOUD FIRESTORE FOR THIS STUFF ON FIRST LAUNCH
     func updateAccounts() {
         if let instagram = UserDefaults.standard.string(forKey: "instagram") {
-            instagramHandleLabel.text = "Account linked as @\(instagram)"
+            if UserDefaults.standard.string(forKey: "instagram") != "" {
+                instagramHandleLabel.text = "Account linked as @\(instagram)"
+            }
         }
         if let youtube = UserDefaults.standard.string(forKey: "youtube") {
-            youTubeLabel.text = "Account linked as \(youtube)"
+            if UserDefaults.standard.string(forKey: "youtube") != "" {
+                youTubeLabel.text = "Channel linked as \(youtube)"
+            }
         }
         if let twitter = UserDefaults.standard.string(forKey: "twitter") {
-            twitterHandleLabel.text = "Account linked as @\(twitter)"
+            if UserDefaults.standard.string(forKey: "twitter") != "" {
+                twitterHandleLabel.text = "Account linked as @\(twitter)"
+            }
         }
         if let website = UserDefaults.standard.string(forKey: "website") {
-            websiteLabel.text = "Account linked as \(website)"
+            if UserDefaults.standard.string(forKey: "website") != "" {
+                websiteLabel.text = "Website linked as \(website)"
+            }
         }
     }
     
@@ -67,6 +75,12 @@ class SocialMediaAccountsViewController: UIViewController {
             textField = handle
             textField!.placeholder = "Enter Your Instagram"
         }
+        
+        alertController.addAction(UIAlertAction(title: "Unlink", style: .cancel, handler: {action in
+            self.db.collection("users").document("\(self.username!)").setData(["Instagram" : ""], merge: true)
+            UserDefaults.standard.set("", forKey: "instagram")
+            self.instagramHandleLabel.text = "Account not linked"
+        }))
         alertController.addAction(handleAction)
         present(alertController, animated: true, completion: nil)
     }
@@ -93,32 +107,44 @@ class SocialMediaAccountsViewController: UIViewController {
             textField = handle
             textField!.placeholder = "Enter Your Twitter"
         }
+        
+        alertController.addAction(UIAlertAction(title: "Unlink", style: .cancel, handler: {action in
+            self.db.collection("users").document("\(self.username!)").setData(["Twitter" : ""], merge: true)
+            UserDefaults.standard.set("", forKey: "twitter")
+            self.twitterHandleLabel.text = "Account not linked"
+        }))
         alertController.addAction(handleAction)
         present(alertController, animated: true, completion: nil)
     }
     
     @IBAction func linkYouTube(_ sender: Any) {
         var textField: UITextField?
-        let alertController = UIAlertController(title: "Link Your YouTube Channel", message: "Link your YouTube Channel to help others verify your skills.", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Link Your YouTube Channel", message: "Link your YouTube Channel URL by visiting your channel page online and copying the website URL.", preferredStyle: .alert)
         let handleAction = UIAlertAction(
         title: "Link", style: .default) {
-                (action) -> Void in
-
-                if let handle = textField?.text {
-                    if handle != "" {
-                        print("Channel = \(handle)")
-                        self.youTubeLabel.text = "Channel linked as \(handle)"
-                        UserDefaults.standard.set(handle, forKey: "youtube")
-                        self.db.collection("users").document("\(self.username!)").setData(["YouTube": "\(handle)"], merge: true)
-                    }
-                } else {
-                    print("No channel entered")
+            (action) -> Void in
+            
+            if let handle = textField?.text {
+                if handle != "" {
+                    print("Channel = \(handle)")
+                    self.youTubeLabel.text = "Channel linked!"
+                    UserDefaults.standard.set(handle, forKey: "youtube")
+                    self.db.collection("users").document("\(self.username!)").setData(["YouTube": "\(handle)"], merge: true)
                 }
+            } else {
+                print("No channel entered")
             }
+        }
         alertController.addTextField {(handle) -> Void in
             textField = handle
-            textField!.placeholder = "Enter Your YouTube"
+            textField!.placeholder = "Enter Your YouTube Channel URL"
         }
+        
+        alertController.addAction(UIAlertAction(title: "Unlink", style: .cancel, handler: {action in
+            self.db.collection("users").document("\(self.username!)").setData(["YouTube" : ""], merge: true)
+            UserDefaults.standard.set("", forKey: "youtube")
+            self.youTubeLabel.text = "Channel not linked"
+        }))
         alertController.addAction(handleAction)
         present(alertController, animated: true, completion: nil)
     }
@@ -145,6 +171,12 @@ class SocialMediaAccountsViewController: UIViewController {
             textField = handle
             textField!.placeholder = "Enter Your Website"
         }
+        
+        alertController.addAction(UIAlertAction(title: "Unlink", style: .cancel, handler: {action in
+            self.db.collection("users").document("\(self.username!)").setData(["Website" : ""], merge: true)
+            UserDefaults.standard.set("", forKey: "website")
+            self.websiteLabel.text = "Website not linked"
+        }))
         alertController.addAction(handleAction)
         present(alertController, animated: true, completion: nil)
     }

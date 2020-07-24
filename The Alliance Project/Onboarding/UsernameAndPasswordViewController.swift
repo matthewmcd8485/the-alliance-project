@@ -90,6 +90,10 @@ class UsernameAndPasswordViewController: UIViewController, UITextFieldDelegate {
                 
                 let fullName = user!.firstName + " " + user!.lastName
                 
+                if location == "" {
+                    location = "Location not set"
+                }
+                
                 UserDefaults.standard.set(usernameField.text!, forKey: "username")
                 UserDefaults.standard.set(location, forKey: "cityAndState")
                 UserDefaults.standard.set(fullName, forKey: "fullName")

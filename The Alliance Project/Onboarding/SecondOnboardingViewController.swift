@@ -42,6 +42,8 @@ class SecondOnboardingViewController: UIViewController, CLLocationManagerDelegat
         } else {
             buttonLabel.tintColor = .white
         }
+        
+        privacyButtonLabel.titleLabel?.adjustsFontForContentSizeCategory = true
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -69,9 +71,9 @@ class SecondOnboardingViewController: UIViewController, CLLocationManagerDelegat
     
     func alertLocationAccessNeeded() {
         let settingsAppURL = URL(string: UIApplication.openSettingsURLString)!
-        let alert = UIAlertController(title: "Location Access Needed", message: "Location access is required to give you access to collaborators nearest you.", preferredStyle: UIAlertController.Style.alert)
+        let alert = UIAlertController(title: "Setup Location Access Later", message: "Location access is not required, but you should manually enter it to give you access to collaborators nearest you.", preferredStyle: UIAlertController.Style.alert)
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Setup Later", style: .default, handler: nil))
         alert.addAction(UIAlertAction(title: "Allow Location Access", style: .cancel, handler: { (alert) -> Void in UIApplication.shared.open(settingsAppURL, options: [:], completionHandler: nil)}))
         
         present(alert, animated: true, completion: nil)

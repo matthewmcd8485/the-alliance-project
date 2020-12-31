@@ -5,21 +5,26 @@ target 'The Alliance Project' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
+	#Firebase
 	pod 'Firebase/Core'
 	pod 'Firebase/Auth'
 	pod 'Firebase/RemoteConfig'
 	pod 'Firebase/Database'
-  pod 'Firebase/Storage'
+  	pod 'Firebase/Storage'
 	pod 'Firebase/Performance'
 	pod 'Firebase/Messaging'
-	pod 'Firebase/Analytics'
-	pod 'Firebase/Storage'
 	pod 'Firebase/Firestore'
-	pod 'Firebase/MLVision'
-	pod 'Firebase/MLVisionBarcodeModel'
-  pod 'FirebaseUI/Storage'
-	pod 'Crashlytics'
-	pod 'Fabric'
+  	pod 'FirebaseUI'
+	pod 'MessageKit'
+	pod 'JGProgressHUD'
+	pod 'RealmSwift'
+	pod 'SDWebImage'
+
+	#Facebook Login
+	pod 'FBSDKLoginKit'
+
+	#Google Login
+	pod 'GoogleSignIn'
 
   target 'The Alliance ProjectTests' do
     inherit! :search_paths
@@ -29,6 +34,7 @@ target 'The Alliance Project' do
   target 'The Alliance ProjectUITests' do
     inherit! :search_paths
     # Pods for testing
-  end
+
+	end
 
 end

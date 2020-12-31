@@ -8,7 +8,6 @@ A struct for accessing generic password keychain items.
 import Foundation
 
 struct KeychainItem {
-    // MARK: Types
     
     enum KeychainError: Error {
         case noPassword
@@ -17,24 +16,18 @@ struct KeychainItem {
         case unhandledError
     }
     
-    // MARK: Properties
-    
     let service: String
     
     private(set) var account: String
     
     let accessGroup: String?
     
-    // MARK: Intialization
-    
     init(service: String, account: String, accessGroup: String? = nil) {
         self.service = service
         self.account = account
         self.accessGroup = accessGroup
     }
-    
-    // MARK: Keychain access
-    
+
     func readItem() throws -> String {
         /*
          Build a query to find the item that matches the service, account and

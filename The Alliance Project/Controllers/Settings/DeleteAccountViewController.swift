@@ -101,6 +101,7 @@ class DeleteAccountViewController: UIViewController, FUIAuthDelegate {
                     UserDefaults.standard.set("", forKey: "email")
                     UserDefaults.standard.set("", forKey: "fullName")
                     UserDefaults.standard.set([""], forKey: "blockedUsers")
+                    UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
                 }
             }
             

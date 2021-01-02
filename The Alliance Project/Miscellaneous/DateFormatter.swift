@@ -11,9 +11,8 @@ import Foundation
 final class FormatDate {
     public static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .long
-        formatter.locale = .current
+        formatter.dateFormat = "MMM dd yyyy, h:mm:ss a"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
 }

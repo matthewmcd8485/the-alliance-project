@@ -14,6 +14,8 @@ target 'The Alliance Project' do
 	pod 'Firebase/Performance'
 	pod 'Firebase/Messaging'
 	pod 'Firebase/Firestore'
+	pod 'Firebase/Crashlytics'
+	pod 'Firebase/Analytics'
   	pod 'FirebaseUI'
 	pod 'MessageKit'
 	pod 'JGProgressHUD'

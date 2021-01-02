@@ -72,6 +72,7 @@ class MyAccountViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.requestLocation()
         let otherLocationManager = LocationManager()
         guard let exposedLocation = otherLocationManager.exposedLocation else {
+            showLocationErrorAlert()
             print("*** Error in \(#function): exposedLocation is nil")
             return
         }
@@ -100,20 +101,25 @@ class MyAccountViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func showLocationErrorAlert() {
-        let alert = UIAlertController(title: "Error Retrieving Location", message: "There was an error retrieving your current location. Perhaps your location settings are turned off?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Check App Settings", style: .default, handler: {action in
-            UIApplication.shared.open(URL.init(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
-        }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        self.present(alert, animated: true, completion: nil)
+        if !UserDefaults.standard.bool(forKey: "locationErrorDismissal") {
+            let alert = UIAlertController(title: "Error retrieving location", message: "There was an error retrieving your current location. Perhaps your location settings are turned off?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Check app settings", style: .default, handler: { action in
+                UIApplication.shared.open(URL.init(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+            }))
+            alert.addAction(UIAlertAction(title: "Don't show again", style: .destructive, handler: { action in
+                UserDefaults.standard.set(true, forKey: "locationErrorDismissal")
+            }))
+            alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
     @IBAction func updateLocationButton(_ sender: Any) {
-        let alert = UIAlertController(title: "Update Your Location", message: "You can have the app automatically retrieve your current location, or you can enter your own manually.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Use My Current Location", style: .default, handler: {action in
+        let alert = UIAlertController(title: "Update your location", message: "You can have the app automatically retrieve your current location, or you can enter your own manually.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Use my current location", style: .default, handler: {action in
             self.setCurrentLocation()
         }))
-        alert.addAction(UIAlertAction(title: "Enter Custom Location", style: .default, handler: {action in
+        alert.addAction(UIAlertAction(title: "Enter custom location", style: .default, handler: {action in
             self.showCustomLocationField()
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -122,7 +128,7 @@ class MyAccountViewController: UIViewController, CLLocationManagerDelegate {
     
     func showCustomLocationField() {
         var textField: UITextField?
-        let alertController = UIAlertController(title: "Enter Custom Location", message: "Enter your location in the City, State format.", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Enter custom location", message: "Enter your location in the City, State format.", preferredStyle: .alert)
         let handleAction = UIAlertAction(
         title: "Update", style: .default) {
                 (action) -> Void in
@@ -131,7 +137,7 @@ class MyAccountViewController: UIViewController, CLLocationManagerDelegate {
                     if location != "" {
                         print("Location = \(location)")
                         self.db.collection("users").document("\(self.email!)").setData(["Locality" : "\(location) (Custom)"], merge: true)
-                        UserDefaults.standard.set(location, forKey: "cityAndState")
+                        UserDefaults.standard.set("\(location) (Custom)", forKey: "cityAndState")
                         self.cityStateLabel.text = "\(location) (Custom)"
                     }
                 } else {
@@ -176,7 +182,7 @@ class MyAccountViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-         print("error:: \(error.localizedDescription)")
+        print("location failure error: \(error.localizedDescription)")
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {

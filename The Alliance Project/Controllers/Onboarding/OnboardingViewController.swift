@@ -65,14 +65,14 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
-    func setupRemoteConfigDefaults() {
+    private func setupRemoteConfigDefaults() {
         let defaultValues = ["blacklisted_users" : "" as NSObject]
         
         remoteConfig.setDefaults(defaultValues)
         blacklistedUsers = defaultValues
     }
     
-    func fetchRemoteConfigValues() {
+    private func fetchRemoteConfigValues() {
         remoteConfig.fetchAndActivate() { status, error in
             guard error == nil else {
                 print("Error reaching Firebse Remote Config: \(error!)")
@@ -162,7 +162,8 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
     // MARK: - FirebaseUI Auth
     func authUI(_ authUI: FUIAuth, didSignInWith authDataResult: AuthDataResult?, error: Error?) {
         if error != nil {
-            alertManager.showAlert(title: "Error authenticating account", message: "There was an error authenticating the account. Please try again. \n \n Error: \(error!)")
+            // The most common error occurs when users cancel the sign-in flow, so I got rid of the error AlertController.
+            print(error!)
         } else if let user = authDataResult?.user {
             if authDataResult!.additionalUserInfo!.isNewUser {
                 print("This is a new user! email: \(user.email ?? "[NO EMAIL]"), name: \(authDataResult?.user.displayName ?? "[NO NAME]"), uid: \(user.uid)")
@@ -179,7 +180,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                         }
                         switch result {
                         
-                        // Profile Image Upload Suceeded
+                        // Profile image upload succeded
                         case .success(let url):
                             strongSelf.profileImageURL = url
                             DispatchQueue.global(qos: .background).async {
@@ -217,6 +218,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                                 UserDefaults.standard.set(nameToCommit, forKey: "fullName")
                                 UserDefaults.standard.set(user.uid, forKey: "userIdentifier")
                                 UserDefaults.standard.set(true, forKey: "loggedIn")
+                                UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
                                 UserDefaults.standard.set([""], forKey: "blockedUsers")
                                 
                                 DispatchQueue.main.async {
@@ -276,6 +278,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                             UserDefaults.standard.set(locality, forKey: "cityAndState")
                             UserDefaults.standard.set(user.uid, forKey: "userIdentifier")
                             UserDefaults.standard.set([""], forKey: "blockedUsers")
+                            UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
                         }
                         
                         // Update the list of blocked users
@@ -301,6 +304,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
         locationManager.requestLocation()
         let otherLocationManager = LocationManager()
         guard let exposedLocation = otherLocationManager.exposedLocation else {
+            location = "Location not set"
             print("*** Error in \(#function): exposedLocation is nil")
             return
         }
@@ -323,7 +327,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
         }
     }
     
-    func startLocationServices() {
+    private func startLocationServices() {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
         let locationAuthorizationStatus = CLLocationManager.authorizationStatus()
@@ -332,20 +336,11 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
         case .authorizedAlways, .authorizedWhenInUse: if CLLocationManager.locationServicesEnabled() {
             self.locationManager.startUpdatingLocation()
         }
-        case .restricted, .denied: self.alertLocationAccessNeeded()
+        case .restricted, .denied:
+            break
         @unknown default:
             fatalError()
         }
-    }
-    
-    func alertLocationAccessNeeded() {
-        let settingsAppURL = URL(string: UIApplication.openSettingsURLString)!
-        let alert = UIAlertController(title: "Setup Location Access Later", message: "Location access is not required, but you should manually enter it to give you access to collaborators nearest you.", preferredStyle: UIAlertController.Style.alert)
-        
-        alert.addAction(UIAlertAction(title: "Setup Later", style: .default, handler: nil))
-        alert.addAction(UIAlertAction(title: "Allow Location Access", style: .cancel, handler: { (alert) -> Void in UIApplication.shared.open(settingsAppURL, options: [:], completionHandler: nil)}))
-        
-        present(alert, animated: true, completion: nil)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
@@ -355,14 +350,26 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
         case .authorizedWhenInUse, .authorizedAlways: if CLLocationManager.locationServicesEnabled() {
             self.locationManager.startUpdatingLocation()
         }
-        case .restricted, .denied: self.alertLocationAccessNeeded()
+        case .restricted, .denied:
+            break
         @unknown default:
             break
         }
     }
     
+    private func alertLocationAccessNeeded() {
+        let settingsAppURL = URL(string: UIApplication.openSettingsURLString)!
+        let alert = UIAlertController(title: "Setup location access", message: "Although location access is not required, it can give you access to collaborators nearest you.", preferredStyle: UIAlertController.Style.alert)
+        
+        alert.addAction(UIAlertAction(title: "Setup later", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Allow location access", style: .cancel, handler: { (alert) -> Void in UIApplication.shared.open(settingsAppURL, options: [:], completionHandler: nil)}))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        alertManager.showAlert(title: "Location error", message: "There was an error with the device's location. Please try again. \n \n Error: \(error)")
+        // Gets called if the app tries to grab a location without necessary permissions
+        print("location failure error: \(error.localizedDescription)")
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

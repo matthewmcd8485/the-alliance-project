@@ -439,6 +439,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
     
     private func createMessageID() -> String? {
         let dateString = FormatDate.dateFormatter.string(from: Date())
+        
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {
             return nil
         }

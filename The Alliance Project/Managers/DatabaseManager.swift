@@ -334,6 +334,8 @@ extension DatabaseManager {
                     return
                 }
                 
+                print(date)
+                
                 let latestMessage = LatestMessage(date: date, text: text, isRead: isRead, kind: finalKind)
                 let conversation = Conversation(conversationID: id, name: name, otherUserEmail: otherUserEmail, fcmToken: token, latestMessage: latestMessage)
                 
@@ -343,9 +345,10 @@ extension DatabaseManager {
                 }
             }
             
-            conversations.sort {
-                FormatDate.dateFormatter.date(from: $0.latestMessage.date)! > FormatDate.dateFormatter.date(from: $1.latestMessage.date)!
-            }
+           conversations.sort {
+               FormatDate.dateFormatter.date(from: $0.latestMessage.date)! > FormatDate.dateFormatter.date(from: $1.latestMessage.date)!
+           }
+            
             
             let filteredConversations = conversations.filterDuplicates { $0.conversationID == $1.conversationID }
             completion(.success(filteredConversations))

@@ -11,6 +11,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseUI
 import FirebaseFirestore
+import FirebaseCrashlytics
 import AuthenticationServices
 
 class MainViewController: UIViewController {
@@ -90,11 +91,9 @@ class MainViewController: UIViewController {
     
     func checkForLoginHistory() -> Bool {
         if UserDefaults.standard.bool(forKey: "loggedIn") == true {
-            
             // Update the array of blocked users
             return true
         }
-        
         return false
     }
     
@@ -139,6 +138,7 @@ class MainViewController: UIViewController {
                         }
                         
                         UserDefaults.standard.set(false, forKey: "loggedIn")
+                        UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
                         UserDefaults.standard.set("", forKey: "authCredential")
                         UserDefaults.standard.set([""], forKey: "blockedUsers")
                         UserDefaults.standard.set("", forKey: "instagram")

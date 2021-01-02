@@ -67,6 +67,7 @@ class SettingsViewController: UIViewController {
             }
             
             UserDefaults.standard.set(false, forKey: "loggedIn")
+            UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
             UserDefaults.standard.set("", forKey: "authCredential")
             UserDefaults.standard.set([""], forKey: "blockedUsers")
             UserDefaults.standard.set("", forKey: "instagram")
@@ -87,6 +88,7 @@ class SettingsViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Log Out Normally", style: .default, handler: { [weak self] action in
             UserDefaults.standard.set(false, forKey: "loggedIn")
+            UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
             UserDefaults.standard.set("", forKey: "userIdentifier")
             UserDefaults.standard.set("", forKey: "instagram")
             UserDefaults.standard.set("", forKey: "twitter")

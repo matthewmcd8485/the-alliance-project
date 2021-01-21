@@ -33,7 +33,6 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
     
     @IBOutlet weak var profileImageView: UIImageView!
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -67,12 +66,30 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
     @objc func didTapInfoButton() {
         let currentEmail = UserDefaults.standard.string(forKey: "email")
         let alert = UIAlertController(title: "Flag project", message: "You can flag a project for being inappropriate, spam, offensive, etc. Flagged projects will be removed from The Alliange Project if they are deemed inappropriate or offensive in any way.", preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Mark as inappropriate", style: .destructive, handler: { [weak self] action in
+        
+        // Report as inappropriate
+        alert.addAction(UIAlertAction(title: "Report project as inappropriate", style: .default, handler: { [weak self] action in
             if self?.creatorEmail == currentEmail {
                 self?.alertManager.showAlert(title: "Hold up!", message: "You can't report your own project. Nice try, though!")
             } else {
                 let date = FormatDate.dateFormatter.string(from: Date())
-                DatabaseManager.shared.reportProject(with: (self?.creatorEmail)!, title: (self?.projectTitle)!, description: (self?.descriptionLabel.text)!, date: date, completion: { success in
+                ReportingManager.shared.reportProject(with: (self?.creatorEmail)!, title: (self?.projectTitle)!, description: (self?.descriptionLabel.text)!, date: date, kind: "Inappropriate", completion: { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self?.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")
+                        }
+                    }
+                })
+            }
+        }))
+        
+        // Report as spam
+        alert.addAction(UIAlertAction(title: "Report project as spam", style: .default, handler: { [weak self] action in
+            if self?.creatorEmail == currentEmail {
+                self?.alertManager.showAlert(title: "Hold up!", message: "You can't report your own project. Nice try, though!")
+            } else {
+                let date = FormatDate.dateFormatter.string(from: Date())
+                ReportingManager.shared.reportProject(with: (self?.creatorEmail)!, title: (self?.projectTitle)!, description: (self?.descriptionLabel.text)!, date: date, kind: "Spam", completion: { success in
                     if success {
                         DispatchQueue.main.async {
                             self?.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")

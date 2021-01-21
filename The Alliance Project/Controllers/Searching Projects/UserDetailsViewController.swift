@@ -64,19 +64,38 @@ class UserDetailsViewController: UIViewController {
             alertManager.showAlert(title: "Hold up!", message: "You can't report or block yourself. Nice try, though!")
         } else {
             let alert = UIAlertController(title: "User Actions", message: "You can report or block a user here.", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Report user", style: .default, handler: { [weak self] action in
+            
+            // Report as inappropriate
+            alert.addAction(UIAlertAction(title: "Report user as inappropriate", style: .default, handler: { [weak self] action in
                 guard let strongSelf = self else {
                     return
                 }
                 
                 // Add user to collection of reportees
                 let date = FormatDate.dateFormatter.string(from: Date())
-                DatabaseManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.nameLabel.text)!, date: date, completion: { success in
+                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.nameLabel.text)!, date: date, kind: "Inappropriate", completion: { success in
                     if success {
                         strongSelf.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")
                     }
                 })
             }))
+            
+            // Report as spam
+            alert.addAction(UIAlertAction(title: "Report user as spam", style: .default, handler: { [weak self] action in
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                // Add user to collection of reportees
+                let date = FormatDate.dateFormatter.string(from: Date())
+                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.nameLabel.text)!, date: date, kind: "Spam", completion: { success in
+                    if success {
+                        strongSelf.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")
+                    }
+                })
+            }))
+            
+            // Block user
             alert.addAction(UIAlertAction(title: "Block user", style: .destructive, handler: { action in
                 let secondAlert = UIAlertController(title: "Are you sure?", message: "This action cannot be undone.", preferredStyle: .actionSheet)
                 secondAlert.addAction(UIAlertAction(title: "Block user", style: .destructive, handler: { [weak self] action in

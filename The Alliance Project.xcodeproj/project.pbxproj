@@ -22,6 +22,9 @@
 		C933D3B525466AC500FEDDC6 /* PhotoViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C933D3B425466AC500FEDDC6 /* PhotoViewerViewController.swift */; };
 		C933D3BD25466AED00FEDDC6 /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C933D3BC25466AED00FEDDC6 /* NewConversationViewController.swift */; };
 		C9507CAB254383F100C3051A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C9507CAA254383F100C3051A /* GoogleService-Info.plist */; };
+		C95A1E1E25A845570081E115 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C95A1E1C25A845570081E115 /* LaunchScreen.storyboard */; };
+		C95A1E2225A84BDC0081E115 /* ProjectSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C95A1E2125A84BDC0081E115 /* ProjectSearchTableViewCell.swift */; };
+		C95A1E2625A8522A0081E115 /* Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = C95A1E2525A8522A0081E115 /* Project.swift */; };
 		C960D9F122D52D31007ED455 /* BEYNO.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C960D9EF22D52D2F007ED455 /* BEYNO.ttf */; };
 		C960D9F222D52D31007ED455 /* Selim.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C960D9F022D52D31007ED455 /* Selim.ttf */; };
 		C960DA0422D55045007ED455 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C960DA0322D55045007ED455 /* Main.storyboard */; };
@@ -38,7 +41,6 @@
 		C987B30E22D52BB1003886A7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C987B30D22D52BB1003886A7 /* SceneDelegate.swift */; };
 		C987B31022D52BB1003886A7 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C987B30F22D52BB1003886A7 /* MainViewController.swift */; };
 		C987B31522D52BB2003886A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C987B31422D52BB2003886A7 /* Assets.xcassets */; };
-		C987B31822D52BB2003886A7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C987B31622D52BB2003886A7 /* LaunchScreen.storyboard */; };
 		C987B32322D52BB2003886A7 /* The_Alliance_ProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C987B32222D52BB2003886A7 /* The_Alliance_ProjectTests.swift */; };
 		C987B32E22D52BB2003886A7 /* The_Alliance_ProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C987B32D22D52BB2003886A7 /* The_Alliance_ProjectUITests.swift */; };
 		C98E6503256F19C000BC8FE4 /* BlockedWords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C98E6502256F19C000BC8FE4 /* BlockedWords.swift */; };
@@ -157,6 +159,9 @@
 		C933D3B425466AC500FEDDC6 /* PhotoViewerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PhotoViewerViewController.swift; path = "../New Group/PhotoViewerViewController.swift"; sourceTree = "<group>"; };
 		C933D3BC25466AED00FEDDC6 /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
 		C9507CAA254383F100C3051A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		C95A1E1D25A845570081E115 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		C95A1E2125A84BDC0081E115 /* ProjectSearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSearchTableViewCell.swift; sourceTree = "<group>"; };
+		C95A1E2525A8522A0081E115 /* Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project.swift; sourceTree = "<group>"; };
 		C960D9EF22D52D2F007ED455 /* BEYNO.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = BEYNO.ttf; sourceTree = "<group>"; };
 		C960D9F022D52D31007ED455 /* Selim.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Selim.ttf; sourceTree = "<group>"; };
 		C960D9F322D52D6F007ED455 /* The Alliance Project.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "The Alliance Project.entitlements"; sourceTree = "<group>"; };
@@ -175,7 +180,6 @@
 		C987B30D22D52BB1003886A7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		C987B30F22D52BB1003886A7 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		C987B31422D52BB2003886A7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C987B31722D52BB2003886A7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C987B31922D52BB2003886A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C987B31E22D52BB2003886A7 /* The Alliance ProjectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "The Alliance ProjectTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C987B32222D52BB2003886A7 /* The_Alliance_ProjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = The_Alliance_ProjectTests.swift; sourceTree = "<group>"; };
@@ -312,6 +316,7 @@
 			children = (
 				C98584DD25620F9900F26472 /* ConversationTableViewCell.swift */,
 				C9074CCD256B83350073FE90 /* NewConversationCell.swift */,
+				C95A1E2125A84BDC0081E115 /* ProjectSearchTableViewCell.swift */,
 			);
 			path = "TableView Cells";
 			sourceTree = "<group>";
@@ -335,7 +340,7 @@
 			isa = PBXGroup;
 			children = (
 				C960DA0322D55045007ED455 /* Main.storyboard */,
-				C987B31622D52BB2003886A7 /* LaunchScreen.storyboard */,
+				C95A1E1C25A845570081E115 /* LaunchScreen.storyboard */,
 			);
 			path = Storyboards;
 			sourceTree = "<group>";
@@ -461,6 +466,7 @@
 				C9E6D60B256F7FB90038AD4F /* Location.swift */,
 				C9E6D60F256F810E0038AD4F /* Conversation.swift */,
 				C9E6D613256F81330038AD4F /* LatestMessage.swift */,
+				C95A1E2525A8522A0081E115 /* Project.swift */,
 			);
 			path = Structs;
 			sourceTree = "<group>";
@@ -696,9 +702,9 @@
 				C9B9482522EC1E8100552655 /* AG-ExtraBold.otf in Resources */,
 				C9B9482322EC1E8100552655 /* AG-BlackItalic.otf in Resources */,
 				C9B9481E22EC1E8100552655 /* AG-Light.otf in Resources */,
+				C95A1E1E25A845570081E115 /* LaunchScreen.storyboard in Resources */,
 				C9B9482022EC1E8100552655 /* AG-UltraLightItalic.otf in Resources */,
 				C960D9F122D52D31007ED455 /* BEYNO.ttf in Resources */,
-				C987B31822D52BB2003886A7 /* LaunchScreen.storyboard in Resources */,
 				C9B9482222EC1E8100552655 /* AG-BoldItalic.otf in Resources */,
 				C9B9482422EC1E8100552655 /* AG-MediumItalic.otf in Resources */,
 				C9B9482922EC1E8100552655 /* AG-ExtraBoldItalic.otf in Resources */,
@@ -886,6 +892,8 @@
 				C97AC41B2560B9E900471B77 /* ActivityViewController.swift in Sources */,
 				C9E6D5EE256F7E550038AD4F /* Message.swift in Sources */,
 				C9BD481924C27F710000DCC4 /* SocialMediaAccountsViewController.swift in Sources */,
+				C95A1E2625A8522A0081E115 /* Project.swift in Sources */,
+				C95A1E2225A84BDC0081E115 /* ProjectSearchTableViewCell.swift in Sources */,
 				C9CA5B8E238F89F1002F733F /* PictureEditViewController.swift in Sources */,
 				C9D17B0E2579774B00F739C0 /* BackBarButtonItem.swift in Sources */,
 				C9E6D61C256F82890038AD4F /* StorageType.swift in Sources */,
@@ -956,10 +964,10 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		C987B31622D52BB2003886A7 /* LaunchScreen.storyboard */ = {
+		C95A1E1C25A845570081E115 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				C987B31722D52BB2003886A7 /* Base */,
+				C95A1E1D25A845570081E115 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -1093,7 +1101,7 @@
 				BUNDLE_ID_SUFFIX = "";
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "The\\ Alliance\\ Project/Assets.xcassets";
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
@@ -1104,7 +1112,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.matthew.The-Alliance-Project";
 				PRODUCT_NAME = "Alliance Project";
 				SWIFT_VERSION = 5.0;
@@ -1120,7 +1128,7 @@
 				BUNDLE_ID_SUFFIX = "";
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "The\\ Alliance\\ Project/Assets.xcassets";
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
 				EXCLUDED_ARCHS = "";
@@ -1131,7 +1139,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.matthew.The-Alliance-Project";
 				PRODUCT_NAME = "Alliance Project";
 				SWIFT_VERSION = 5.0;
@@ -1289,7 +1297,7 @@
 				BUNDLE_ID_SUFFIX = .beta;
 				CODE_SIGN_ENTITLEMENTS = "The Alliance Project/The Alliance Project.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "The\\ Alliance\\ Project/Assets.xcassets";
 				DEVELOPMENT_TEAM = 5BE9AG9X7E;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
@@ -1299,7 +1307,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.matthew.The-Alliance-Project";
 				PRODUCT_NAME = "Alliance Project";
 				SWIFT_VERSION = 5.0;

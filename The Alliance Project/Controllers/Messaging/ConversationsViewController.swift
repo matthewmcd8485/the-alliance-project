@@ -12,7 +12,7 @@ import JGProgressHUD
 class ConversationsViewController: UIViewController {
     
     private let spinner = JGProgressHUD(style: .dark)
-    
+    private let refreshControl = UIRefreshControl()
     private var conversations = [Conversation]()
     
     @IBOutlet weak var nothingHereLabel: UILabel!
@@ -38,7 +38,7 @@ class ConversationsViewController: UIViewController {
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "purpleColor")
         
         setupTableView()
-        startListeningForConversations()
+        getAllConversations()
     }
     
     override func viewDidLayoutSubviews() {
@@ -79,7 +79,7 @@ class ConversationsViewController: UIViewController {
     }
     
     // MARK: - Conversations
-    private func startListeningForConversations() {
+    private func getAllConversations() {
         guard let email = UserDefaults.standard.string(forKey: "email") else {
             return
         }
@@ -99,6 +99,7 @@ class ConversationsViewController: UIViewController {
                 DispatchQueue.main.async {
                     self?.showTableView()
                     self?.tableView.reloadData()
+                    self?.refreshControl.endRefreshing()
                 }
             case .failure(let error):
                 self?.hideTableView()
@@ -153,7 +154,27 @@ class ConversationsViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         
+        let string = "Fetching conversations..."
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont(name: "AcherusGrotesque-Regular", size: 10)!,
+        ]
+        
+        refreshControl.attributedTitle = NSAttributedString(string: string, attributes: attributes)
+        refreshControl.backgroundColor = UIColor(named: "backgroundColors")
+        
+        if #available(iOS 10.0, *) {
+            tableView.refreshControl = refreshControl
+        } else {
+            tableView.addSubview(refreshControl)
+        }
+        
+        refreshControl.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
+        
         hideTableView()
+    }
+    
+    @objc private func refreshTableView(_ sender: Any) {
+        getAllConversations()
     }
 }
 

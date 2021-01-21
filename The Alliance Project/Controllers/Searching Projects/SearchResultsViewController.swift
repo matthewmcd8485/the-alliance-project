@@ -20,12 +20,13 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet weak var noProjectsLabel: UILabel!
     
     let db = Firestore.firestore()
-    var projectsArray = [String]()
-    var creatorNamesArray = [String]()
-    var creatorEmailsArray = [String]()
+    
+    private var results = [Project]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.register(ProjectSearchTableViewCell.self, forCellReuseIdentifier: ProjectSearchTableViewCell.identifier)
         
         title = "SEARCH RESULTS"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
@@ -34,9 +35,6 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
         let backButton = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem = backButton
         
-        categoryLabel.text = "Category: \(category!)"
-        noProjectsLabel.text = "Loading projects..."
-        
         tableView.tableFooterView = UIView(frame: CGRect.zero)
         self.tableView.delegate = self
         self.tableView.dataSource = self
@@ -44,35 +42,70 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
         loadProjects()
     }
     
-    func loadProjects() {
-        db.collectionGroup("projects").whereField("Category", isEqualTo: category!).getDocuments() { [weak self] (snapshot, error) in
-            guard let strongSelf = self else {
-                return
-            }
-            
-            if error != nil {
-                print("error retrieving project documents: ", error!)
-            }
-            for document in snapshot!.documents {
-                
-                let data = document.data()
-                let title = data["Project Title"] as? String ?? ""
-                let creatorName = data["Creator Name"] as? String ?? ""
-                let creatorEmail = data["Creator Email"] as? String ?? ""
-                
-                // Check if the project's creator is blocked
-                if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
-                    strongSelf.projectsArray.append(title)
-                    strongSelf.creatorNamesArray.append(creatorName)
-                    strongSelf.creatorEmailsArray.append(creatorEmail)
+    private func loadProjects() {
+        noProjectsLabel.text = "Loading projects..."
+        if category == "All Projects" {
+            // Load all projects
+            categoryLabel.text = "Showing all open projects"
+            db.collectionGroup("projects").getDocuments() { [weak self] (snapshot, error) in
+                guard let strongSelf = self else {
+                    return
                 }
+                
+                if error != nil {
+                    print("error retrieving project documents: ", error!)
+                }
+                for document in snapshot!.documents {
+                    let data = document.data()
+                    let title = data["Project Title"] as? String ?? ""
+                    let creatorName = data["Creator Name"] as? String ?? ""
+                    let creatorEmail = data["Creator Email"] as? String ?? ""
+                    let projectCategory = data["Category"] as? String ?? ""
+                    
+                    // Check if the project's creator is blocked
+                    if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
+                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: "", category: projectCategory)
+                        strongSelf.results.append(project)
+                    }
+                }
+                if strongSelf.results.count != 0 {
+                    strongSelf.noProjectsLabel.text = ""
+                } else {
+                    strongSelf.noProjectsLabel.text = "No projects found."
+                }
+                strongSelf.tableView.reloadData()
             }
-            if strongSelf.projectsArray.count != 0 {
-                strongSelf.noProjectsLabel.text = ""
-            } else {
-                strongSelf.noProjectsLabel.text = "No projects under the given category."
+        } else {
+            // Load projects for only a certain category
+            categoryLabel.text = "Category: \(category!)"
+            db.collectionGroup("projects").whereField("Category", isEqualTo: category!).getDocuments() { [weak self] (snapshot, error) in
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                if error != nil {
+                    print("error retrieving project documents: ", error!)
+                }
+                for document in snapshot!.documents {
+                    let data = document.data()
+                    let title = data["Project Title"] as? String ?? ""
+                    let creatorName = data["Creator Name"] as? String ?? ""
+                    let creatorEmail = data["Creator Email"] as? String ?? ""
+                    let date = data["Date Created"] as? String ?? ""
+                    
+                    // Check if the project's creator is blocked
+                    if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
+                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: date, category: "")
+                        strongSelf.results.append(project)
+                    }
+                }
+                if strongSelf.results.count != 0 {
+                    strongSelf.noProjectsLabel.text = ""
+                } else {
+                    strongSelf.noProjectsLabel.text = "No projects under the given category."
+                }
+                strongSelf.tableView.reloadData()
             }
-            strongSelf.tableView.reloadData()
         }
     }
     
@@ -81,36 +114,43 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
         return 1
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let project = results[indexPath.row]
+        
+        UserDefaults.standard.set(project.email, forKey: "creatorEmail")
+        UserDefaults.standard.set(project.title, forKey: "projectTitle")
+        
         performSegue(withIdentifier: "showDetails", sender: self)
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return projectsArray.count
+        return results.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let project = projectsArray[indexPath.row]
-        cell.textLabel?.font = UIFont(name:"AcherusGrotesque-Light", size: 22)
+        let model = results[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: ProjectSearchTableViewCell.identifier, for: indexPath) as! ProjectSearchTableViewCell
+        cell.textLabel?.font = UIFont(name: "AcherusGrotesque-Medium", size: 18)
         cell.textLabel?.textColor = UIColor(named: "purpleColor")
         cell.backgroundColor = UIColor(named: "backgroundColors")
-        cell.textLabel?.text = project
-        cell.detailTextLabel?.text = "detail"
-        cell.textLabel?.textAlignment = .center
-        
-        return(cell)
+        cell.accessoryType = .disclosureIndicator
+        cell.configure(with: model)
+        return cell
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destination = segue.destination as? SelectedProjectViewController {
-            UserDefaults.standard.set(creatorEmailsArray[tableView.indexPathForSelectedRow!.row], forKey: "creatorEmail")
-            UserDefaults.standard.set(projectsArray[tableView.indexPathForSelectedRow!.row], forKey: "projectTitle")
-            
-            destination.projectTitle = projectsArray[tableView.indexPathForSelectedRow!.row]
-            destination.projectCreatorName = creatorNamesArray[tableView.indexPathForSelectedRow!.row]
-            destination.creatorEmail = creatorEmailsArray[tableView.indexPathForSelectedRow!.row]
+            if let destination = segue.destination as? SelectedProjectViewController {
+                UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].email, forKey: "creatorEmail")
+                UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].title, forKey: "projectTitle")
+                
+                destination.projectTitle = results[tableView.indexPathForSelectedRow!.row].title
+                destination.projectCreatorName = results[tableView.indexPathForSelectedRow!.row].name
+                destination.creatorEmail = results[tableView.indexPathForSelectedRow!.row].email
+            }
         }
-    }
 }

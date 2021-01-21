@@ -71,6 +71,10 @@ class ICanHelpViewController: UIViewController, UIPickerViewDelegate, UIPickerVi
         }
     }
     
+    @IBAction func viewAllButton(_ sender: Any) {
+        performSegue(withIdentifier: "searchSegue", sender: "All Projects")
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let searchResultsVC = segue.destination as? SearchResultsViewController, let category = sender as? String {
             searchResultsVC.category = category

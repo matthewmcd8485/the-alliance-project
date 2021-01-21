@@ -10,6 +10,8 @@ import UIKit
 
 class AboutThisAppViewController: UIViewController {
     
+    @IBOutlet weak var reviewButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -18,6 +20,7 @@ class AboutThisAppViewController: UIViewController {
         let backButton = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem = backButton
         
+        reviewButton.layer.cornerRadius = 10
     }
     
     @IBAction func writeReviewButton(_ sender: Any) {

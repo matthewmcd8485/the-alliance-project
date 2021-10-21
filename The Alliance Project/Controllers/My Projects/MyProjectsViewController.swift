@@ -15,16 +15,16 @@ class InstructionsViewController: UIViewController {}
 class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let db = Firestore.firestore()
+    private let refreshControl = UIRefreshControl()
     
     @IBOutlet weak var noProjectsLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
-    var projectsArray = [String]()
-    var numberOfProjectsOpen: Int = 0
+    var projectsArray = [Project]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "MY PROJECTS"
+        navigationItem.title = "My Projects"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -34,41 +34,85 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
         noProjectsLabel.text = "Loading..."
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.tableFooterView = UIView(frame: CGRect.zero)
-        tableView.delegate = self
-        tableView.dataSource = self
         
+        setupTableView()
         loadProjects()
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadProjects()
     }
     
     // MARK: - Load Projects
     let email = UserDefaults.standard.string(forKey: "email")
     func loadProjects() {
+        if projectsArray.count > 0 {
+            projectsArray.removeAll()
+            tableView.reloadData()
+        }
+        
         db.collection("users").document("\(email!)").collection("projects").getDocuments() { [weak self] (querySnapshot, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
             } else {
                 for document in querySnapshot!.documents {
                     
-                    self?.numberOfProjectsOpen += 1
                     let data = document.data()
                     let title = data["Project Title"] as? String ?? ""
+                    let category = data["Category"] as? String ?? ""
+                    let name = data["Creator Name"] as? String ?? ""
+                    let date = data["Date Created"] as? String ?? ""
+                    let email = data["Creator Email"] as? String ?? ""
+                    let backgroundImageURL = data["Background Image URL"] as? String ?? nil
                     
-                    self?.projectsArray.append(title)
+                    let project = Project(title: title, email: email, name: name, date: date, category: category, backgroundImageURL: backgroundImageURL)
+                    self?.projectsArray.append(project)
                     
                 }
             }
-            if self?.projectsArray.count != 0 {
+            
+            let filteredProjects = self?.projectsArray.filterDuplicates { $0.date == $1.date }
+            
+            if filteredProjects?.count != 0 {
                 self?.noProjectsLabel.text = ""
+                self?.projectsArray = filteredProjects!
             } else {
                 self?.noProjectsLabel.text = "Create your first project now!"
             }
-            self?.tableView.reloadData()
             
+            self?.tableView.reloadData()
+            self?.refreshControl.endRefreshing()
         }
     }
     
     // MARK: - Table View Delegates
+    private func setupTableView() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        let string = "Fetching projects..."
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont(name: "AcherusGrotesque-Regular", size: 10)!,
+        ]
+        
+        refreshControl.attributedTitle = NSAttributedString(string: string, attributes: attributes)
+        refreshControl.backgroundColor = UIColor(named: "backgroundColors")
+        
+        if #available(iOS 10.0, *) {
+            tableView.refreshControl = refreshControl
+        } else {
+            tableView.addSubview(refreshControl)
+        }
+        
+        refreshControl.addTarget(self, action: #selector(refreshTableView(_:)), for: .valueChanged)
+    }
+    
+    @objc private func refreshTableView(_ sender: Any) {
+        loadProjects()
+    }
+    
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -92,31 +136,10 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
         cell.textLabel?.font = UIFont(name:"AcherusGrotesque-Light", size: 30)
         cell.textLabel?.textColor = UIColor(named: "purpleColor")
         cell.backgroundColor = UIColor(named: "backgroundColors")
-        cell.textLabel?.text = project
+        cell.textLabel?.text = project.title
         cell.textLabel?.textAlignment = .center
         cell.accessoryType = .disclosureIndicator
         
         return(cell)
-    }
-    
-    let fullName = UserDefaults.standard.string(forKey: "fullName")
-    
-    // MARK: - Create New Project
-    @IBAction func createButton(_ sender: Any) {
-        if numberOfProjectsOpen >= 4 {
-            let alert = UIAlertController(title: "Too many open projects", message: "You may only have 4 projects open at the same time.", preferredStyle: UIAlertController.Style.alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-        } else {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let vc = storyboard.instantiateViewController(withIdentifier: "instructionsVC")
-            self.navigationController?.pushViewController(vc, animated: true)
-        }
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destination = segue.destination as? ProjectEditViewController {
-            destination.projectTitle = projectsArray[tableView.indexPathForSelectedRow!.row]
-        }
     }
 }

@@ -14,7 +14,7 @@ import FirebaseFirestore
 import FirebaseCrashlytics
 import AuthenticationServices
 
-class MainViewController: UIViewController {
+class LoadingViewController: UIViewController {
     
     @IBOutlet var needLabel: UILabel!
     @IBOutlet var canLabel: UILabel!
@@ -26,6 +26,10 @@ class MainViewController: UIViewController {
     // MARK: - Override Functions
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        title = ""
+        let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
+        UINavigationBar.appearance().titleTextAttributes = attributes
         
         // Adjust custom color for the "I NEED HELP" label
         let needStringOne = "I NEED HELP"
@@ -42,6 +46,8 @@ class MainViewController: UIViewController {
         let canAttributedText = NSMutableAttributedString.init(string: canStringOne)
         canAttributedText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor(named: "purpleColor")!, range: canRange)
         canLabel.attributedText = canAttributedText
+        
+        tabBarItem.title = ""
     }
     
     override func viewDidAppear(_ animated: Bool) {

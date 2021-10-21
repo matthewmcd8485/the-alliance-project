@@ -25,7 +25,7 @@ class ProjectEditViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "PROJECT DETAILS"
+        navigationItem.title = "Project Details"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -72,11 +72,7 @@ class ProjectEditViewController: UIViewController {
             }
             
             DispatchQueue.main.async {
-                let count = self.navigationController?.viewControllers.count
-                let storyboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                let homeScreen = storyboard.instantiateViewController(withIdentifier: "homeScreen") as! MainViewController
-                self.navigationController?.pushViewController(homeScreen, animated: true)
-                self.navigationController?.viewControllers.remove(at: count! - 1)
+                self.navigationController?.popToRootViewController(animated: true)
             }
         }))
         

@@ -22,7 +22,7 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "NEW PROJECT"
+        navigationItem.title = "New Project"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -88,7 +88,9 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
                 "Creator Name": fullName!,
                 "Locality": cityAndState!,
                 "Creator Email": email!,
-                "Creator FCM Token" : fcmToken!
+                "Creator FCM Token" : fcmToken!,
+                "Background Image URL" : "",
+                "Project ID" : UUID().uuidString
                 
             ]) { [weak self] err in
                 if let err = err {
@@ -98,9 +100,11 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
                 } else {
                     print("Project successfully created!")
                     
-                    self?.navigationController?.popToRootViewController(animated: true)
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let vc = storyboard.instantiateViewController(identifier: "successVC") as! SuccessViewController
+                    self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }
         }
-        }
+    }
 }

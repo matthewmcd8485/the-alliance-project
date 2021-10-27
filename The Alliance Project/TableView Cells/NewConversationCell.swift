@@ -58,6 +58,8 @@ class NewConversationTableViewCell: UITableViewCell {
             return
         }
         
+        userImageView.alpha = 0
+        
         // Look for user's profile image
         let storageRef = Storage.storage().reference().child("profile images").child("\(email) - profile image.png")
         storageRef.downloadURL(completion: { [weak self] (url, error) in
@@ -72,6 +74,9 @@ class NewConversationTableViewCell: UITableViewCell {
                     } else {
                         DispatchQueue.main.async {
                             self?.userImageView.sd_setImage(with: url!, completed: nil)
+                            UIView.animate(withDuration: 0.5) {
+                                self?.userImageView.alpha = 1
+                            }
                         }
                     }
                 })
@@ -79,6 +84,9 @@ class NewConversationTableViewCell: UITableViewCell {
             } else {
                 DispatchQueue.main.async {
                     self?.userImageView.sd_setImage(with: url!, completed: nil)
+                    UIView.animate(withDuration: 0.5) {
+                        self?.userImageView.alpha = 1
+                    }
                 }
             }
         })

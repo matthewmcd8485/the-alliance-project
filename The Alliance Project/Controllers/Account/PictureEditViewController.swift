@@ -26,7 +26,7 @@ class PictureEditViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "EDIT PICTURE"
+        navigationItem.title = "Edit Picture"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         

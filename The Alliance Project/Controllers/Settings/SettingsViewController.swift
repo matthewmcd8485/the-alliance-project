@@ -10,7 +10,7 @@ import UIKit
 import GoogleSignIn
 import Firebase
 import FirebaseFirestore
-import FirebaseUI
+import FirebaseAuthUI
 
 class SettingsViewController: UIViewController {
     
@@ -21,15 +21,22 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "SETTINGS"
+        navigationItem.title = "Settings"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
         let backButton = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem = backButton
         
+        tabBarController?.hidesBottomBarWhenPushed = true
+        
         deleteDataButton.titleLabel?.numberOfLines = 2
         deleteDataButton.titleLabel?.lineBreakMode = .byWordWrapping
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
     }
     
     @IBOutlet weak var deleteDataButton: UIButton!
@@ -74,10 +81,17 @@ class SettingsViewController: UIViewController {
             UserDefaults.standard.set("", forKey: "twitter")
             UserDefaults.standard.set("", forKey: "youtube")
             UserDefaults.standard.set("", forKey: "website")
+            UserDefaults.standard.set(["", "", ""], forKey: "profileBackgroundImageArray")
             
-            DispatchQueue.main.async {
-                self?.navigationController?.popToRootViewController(animated: true)
+            var navigationArray = self?.navigationController?.viewControllers // To get all UIViewController stack as Array
+            navigationArray!.remove(at: navigationArray!.count - 2) // To remove previous UIViewController
+            self?.navigationController?.viewControllers = navigationArray!
+            
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            if let vc = storyboard.instantiateViewController(withIdentifier: "onboarding") as? OnboardingViewController {
+                self?.navigationController?.pushViewController(vc, animated: true)
             }
+            
         }))
         present(alert, animated: true, completion: nil)
     }
@@ -96,6 +110,7 @@ class SettingsViewController: UIViewController {
             UserDefaults.standard.set("", forKey: "website")
             UserDefaults.standard.set("", forKey: "authCredential")
             UserDefaults.standard.set([""], forKey: "blockedUsers")
+            UserDefaults.standard.set(["", "", ""], forKey: "profileBackgroundImageArray")
             
             do {
                 try self?.authUI?.signOut()

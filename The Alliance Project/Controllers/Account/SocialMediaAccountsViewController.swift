@@ -23,7 +23,7 @@ class SocialMediaAccountsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "LINK SOCIAL ACCOUNTS"
+        navigationItem.title = "Link Social Accounts"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         

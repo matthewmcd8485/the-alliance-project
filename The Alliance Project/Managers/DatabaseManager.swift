@@ -708,3 +708,18 @@ extension DatabaseManager {
         }
     }
 }
+
+// MARK: - Miscellaneous Functions
+extension DatabaseManager {
+    public func updateField(for email: String, fieldToUpdate: String, valueToSave: Any, merge: Bool, completion: @escaping (Bool) -> Void) {
+        firestore.collection("users").document(email).setData([
+            fieldToUpdate : valueToSave
+        ], merge: merge, completion: { error in
+            guard error == nil else {
+                completion(false)
+                return
+            }
+        })
+        completion(true)
+    }
+}

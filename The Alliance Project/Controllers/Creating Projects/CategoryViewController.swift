@@ -10,8 +10,9 @@ import UIKit
 import Firebase
 import FirebaseFirestore
 
-class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class CategoryViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
+    public var completion: ((String) -> (Void))?
     let db = Firestore.firestore()
     let alertManager = AlertManager.shared
     
@@ -32,7 +33,7 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
         pickerView.delegate = self
         pickerView.dataSource = self
         
-        pickerData = ["- Pick A Category -", "Application", "Art", "Athletics", "Automotive", "Engineering", "Health & Fitness", "Music", "Photography", "Technology", "Video Creation", "Website Design"]
+        pickerData = PickerData.pickerData
     }
     
     // MARK: - Picker Delegates
@@ -53,6 +54,7 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
         if let v = view {
             label = v as! UILabel
         }
+        
         label.font = UIFont (name: "AcherusGrotesque-Light", size: 17)
         label.text =  pickerData[row]
         label.textAlignment = .center
@@ -77,34 +79,8 @@ class SpecificsViewController: UIViewController, UIPickerViewDelegate, UIPickerV
         if pickerValueSelected == "- Pick A Category -" {
             alertManager.showAlert(title: "Invalid selection", message: "Please pick a real category.")
         } else {
-            let today = Date()
-            db.collection("users").document("\(email!)").collection("projects").document("\(projectTitle!)").setData([
-                
-                "Project Title": projectTitle!,
-                "Project Description": projectDescription!,
-                "Category": pickerValueSelected,
-                "Date Created": today.toString(dateFormat: "MMM dd, YYYY"),
-                "Views": 0,
-                "Creator Name": fullName!,
-                "Locality": cityAndState!,
-                "Creator Email": email!,
-                "Creator FCM Token" : fcmToken!,
-                "Background Image URL" : "",
-                "Project ID" : UUID().uuidString
-                
-            ]) { [weak self] err in
-                if let err = err {
-                    print("Error creating project: \(err)")
-                    
-                    self?.alertManager.showAlert(title: "Error creating project", message: "There was an error when creating the project. Please try again.")
-                } else {
-                    print("Project successfully created!")
-                    
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let vc = storyboard.instantiateViewController(identifier: "successVC") as! SuccessViewController
-                    self?.navigationController?.pushViewController(vc, animated: true)
-                }
-            }
+            completion!(pickerValueSelected)
+            self.navigationController?.popViewController(animated: true)
         }
     }
 }

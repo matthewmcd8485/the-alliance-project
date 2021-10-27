@@ -7,3 +7,7 @@
 //
 
 import Foundation
+
+struct ProfileURLs: Codable {
+    let html: String
+}

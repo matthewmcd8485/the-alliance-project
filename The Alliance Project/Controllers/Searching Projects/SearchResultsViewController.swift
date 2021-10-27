@@ -14,6 +14,7 @@ import CoreLocation
 class SearchResultsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var category: String?
+    var keyword: String?
     
     @IBOutlet weak var categoryLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
@@ -28,7 +29,7 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
         
         tableView.register(ProjectSearchTableViewCell.self, forCellReuseIdentifier: ProjectSearchTableViewCell.identifier)
         
-        title = "SEARCH RESULTS"
+        navigationItem.title = "Search Results"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -39,10 +40,15 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
         self.tableView.delegate = self
         self.tableView.dataSource = self
         
-        loadProjects()
+        if category != nil {
+            loadProjectsByCategory()
+        } else if keyword != nil {
+            loadProjectsByKeyword()
+        }
+        
     }
     
-    private func loadProjects() {
+    private func loadProjectsByCategory() {
         noProjectsLabel.text = "Loading projects..."
         if category == "All Projects" {
             // Load all projects
@@ -61,11 +67,17 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
                     let creatorName = data["Creator Name"] as? String ?? ""
                     let creatorEmail = data["Creator Email"] as? String ?? ""
                     let projectCategory = data["Category"] as? String ?? ""
+                    let date = data["Date Created"] as? String ?? ""
+                    let backgroundImageURL = data["Background Image URL"] as? String ?? ""
+                    let projectID = data["Project ID"] as? String ?? ""
                     
                     // Check if the project's creator is blocked
                     if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
-                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: "", category: projectCategory)
-                        strongSelf.results.append(project)
+                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: date, category: projectCategory, description: "", backgroundImageURL: backgroundImageURL, backgroundImageCreatorName: "", backgroundImageCreatorProfileURL: "", projectID: projectID)
+                        print(project)
+                        if !project.isBlank() {
+                            strongSelf.results.append(project)
+                        }
                     }
                 }
                 if strongSelf.results.count != 0 {
@@ -92,10 +104,12 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
                     let creatorName = data["Creator Name"] as? String ?? ""
                     let creatorEmail = data["Creator Email"] as? String ?? ""
                     let date = data["Date Created"] as? String ?? ""
+                    let backgroundImageURL = data["Background Image URL"] as? String ?? ""
+                    let projectID = data["Project ID"] as? String ?? ""
                     
                     // Check if the project's creator is blocked
                     if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
-                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: date, category: "")
+                        let project = Project(title: title, email: creatorEmail, name: creatorName, date: date, category: "", description: "", backgroundImageURL: backgroundImageURL, backgroundImageCreatorName: "", backgroundImageCreatorProfileURL: "", projectID: projectID)
                         strongSelf.results.append(project)
                     }
                 }
@@ -106,6 +120,46 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
                 }
                 strongSelf.tableView.reloadData()
             }
+        }
+    }
+    
+    private func loadProjectsByKeyword() {
+        // Load projects by user's search keyword
+        categoryLabel.text = "Search term: \(keyword!)"
+        let endChar = Character(UnicodeScalar((keyword?.last?.asciiValue)! + 1))
+        var newKeyword = String(keyword!.dropLast())
+        newKeyword.append(endChar)
+        
+        db.collectionGroup("projects").whereField("Project Title", isGreaterThan: keyword!).whereField("Project Title", isLessThan: newKeyword ).getDocuments() { [weak self] (snapshot, error) in
+            guard let strongSelf = self else {
+                return
+            }
+            
+            if error != nil {
+                print("error retrieving project documents: ", error!)
+            }
+            for document in snapshot!.documents {
+                let data = document.data()
+                let title = data["Project Title"] as? String ?? ""
+                let creatorName = data["Creator Name"] as? String ?? ""
+                let creatorEmail = data["Creator Email"] as? String ?? ""
+                let date = data["Date Created"] as? String ?? ""
+                let projectCategory = data["Category"] as? String ?? ""
+                let backgroundImageURL = data["Background Image URL"] as? String ?? ""
+                let projectID = data["Project ID"] as? String ?? ""
+                
+                // Check if the project's creator is blocked
+                if !ReportingManager.shared.userIsBlocked(for: creatorEmail) {
+                    let project = Project(title: title, email: creatorEmail, name: creatorName, date: date, category: projectCategory, description: "", backgroundImageURL: backgroundImageURL, backgroundImageCreatorName: "", backgroundImageCreatorProfileURL: "", projectID: projectID)
+                    strongSelf.results.append(project)
+                }
+            }
+            if strongSelf.results.count != 0 {
+                strongSelf.noProjectsLabel.text = ""
+            } else {
+                strongSelf.noProjectsLabel.text = "No projects under the given search terms."
+            }
+            strongSelf.tableView.reloadData()
         }
     }
     
@@ -144,13 +198,14 @@ class SearchResultsViewController: UIViewController, UITableViewDelegate, UITabl
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-            if let destination = segue.destination as? SelectedProjectViewController {
-                UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].email, forKey: "creatorEmail")
-                UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].title, forKey: "projectTitle")
-                
-                destination.projectTitle = results[tableView.indexPathForSelectedRow!.row].title
-                destination.projectCreatorName = results[tableView.indexPathForSelectedRow!.row].name
-                destination.creatorEmail = results[tableView.indexPathForSelectedRow!.row].email
-            }
+        if let destination = segue.destination as? SelectedProjectViewController {
+            UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].email, forKey: "creatorEmail")
+            UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].title, forKey: "projectTitle")
+            UserDefaults.standard.set(results[tableView.indexPathForSelectedRow!.row].date, forKey: "dateCreated")
+            
+            destination.projectTitle = results[tableView.indexPathForSelectedRow!.row].title
+            destination.dateCreated = results[tableView.indexPathForSelectedRow!.row].date
+            destination.creatorEmail = results[tableView.indexPathForSelectedRow!.row].email
         }
+    }
 }

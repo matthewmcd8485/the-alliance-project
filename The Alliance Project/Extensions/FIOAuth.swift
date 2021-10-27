@@ -8,7 +8,7 @@
 
 import Foundation
 import Firebase
-import FirebaseUI
+import FirebaseAuthUI
 import AuthenticationServices
 
 extension FUIOAuth {

@@ -36,7 +36,7 @@ class NewConversationViewController: UIViewController {
         noResultsLabel.isHidden = true
         tableView.isHidden = true
         
-        title = "NEW MESSAGE"
+        navigationItem.title = "New Message"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         

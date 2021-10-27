@@ -8,7 +8,9 @@
 
 import Foundation
 
-struct Result: Codable {
+struct PhotoResult: Codable {
     let id: String
     let urls: URLS
+    let user: UnsplashUser
+    let links: UnsplashLinks
 }

@@ -8,6 +8,6 @@
 
 import UIKit
 
-class NavigationMenuBaseController: UINavigationController {
+class NavigationController: UINavigationController {
     // Embedded Navigation Controller from the storyboard
 }

@@ -6,9 +6,7 @@
 //  Copyright © 2021 Matthew McDonnell. All rights reserved.
 //
 
-import Foundation
 import UIKit
-import Firebase
 
 class ProjectSearchTableViewCell: UITableViewCell {
     static let identifier = "ProjectSearchTableViewCell"
@@ -50,11 +48,11 @@ class ProjectSearchTableViewCell: UITableViewCell {
     }
     
     public func configure(with model: Project) {
+        print(model)
         // Setting text in labels
         projectTitleLabel.text = model.title
-        if model.date == "" {
-            categoryDateLabel.text = model.category
-        } else if model.category == "" {
+        categoryDateLabel.text = model.category
+        if model.category == "" {
             categoryDateLabel.text = "Created on \(model.date)"
         }
     }

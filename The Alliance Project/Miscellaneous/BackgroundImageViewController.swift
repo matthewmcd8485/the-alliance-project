@@ -10,7 +10,7 @@ import UIKit
 
 class BackgroundImageViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UISearchBarDelegate {
     
-    public var completion: (([String: String]) -> (Void))?
+    public var completion: ((PhotoResult) -> (Void))?
     var results: [PhotoResult] = []
     
     private var collectionView: UICollectionView?
@@ -21,7 +21,7 @@ class BackgroundImageViewController: UIViewController, UICollectionViewDataSourc
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "Image Results"
+        navigationItem.title = "Images by Unsplash"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -41,6 +41,8 @@ class BackgroundImageViewController: UIViewController, UICollectionViewDataSourc
         view.addSubview(collectionView)
         self.collectionView = collectionView
         
+        collectionView.isHidden = true
+        
         view.bringSubviewToFront(searchBar)
         searchBar.delegate = self
         searchBar.becomeFirstResponder()
@@ -54,8 +56,20 @@ class BackgroundImageViewController: UIViewController, UICollectionViewDataSourc
         collectionView?.frame = CGRect(x: 0, y: searchBar.bottom, width: view.frame.size.width, height: view.frame.size.height)
     }
     
+    @IBAction func unsplashButton(_ sender: Any) {
+        let alert = UIAlertController(title: "Visit the Unsplash website", message: "This will send you outside of The Alliance Project. Continue?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Let's go", style: .default, handler: { action in
+            if let path = URL(string: "https://unsplash.com?utm_source=The-Alliance-Project&utm_medium=referral") {
+                    UIApplication.shared.open(path, options: [:], completionHandler: nil)
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true)
+    }
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(true)
+        collectionView?.isHidden = false
         
         if let text = searchBar.text {
             results = []
@@ -76,17 +90,25 @@ class BackgroundImageViewController: UIViewController, UICollectionViewDataSourc
         searchBar.showsCancelButton = false
         // You could also change the position, frame etc of the searchBar
         searchBar.endEditing(true)
+        collectionView?.isHidden = true
+        results = []
+        collectionView?.reloadData()
     }
     
     // MARK: - Fetch Photos
     func fetchPhotos(query: String) {
-        let urlString = "https://api.unsplash.com/search/photos?page=1&per_page=50&query=\(query)&client_id=dAThptNKlrO869ksueV0rYJANsIYqqnTjCmW4Qq0T2s"
+        let urlString = "https://api.unsplash.com/search/photos?page=1&per_page=50&query=\(query)&content_filter=high"
         
         let safeURLString = urlString.replacingOccurrences(of: " ", with: "-")
         guard let url = URL(string: safeURLString) else {
             return
         }
-        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+        let token = "dAThptNKlrO869ksueV0rYJANsIYqqnTjCmW4Qq0T2s"
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Client-ID \(token)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             guard let data = data, error == nil else {
                 return
             }
@@ -111,21 +133,44 @@ class BackgroundImageViewController: UIViewController, UICollectionViewDataSourc
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let imageURLString = results[indexPath.row].urls.small
+        let unsplashUserName = results[indexPath.row].user.name
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ImageCollectionViewCell.identifier, for: indexPath) as? ImageCollectionViewCell else {
             return UICollectionViewCell()
         }
-        cell.configure(with: imageURLString)
+        cell.configure(with: imageURLString, name: unsplashUserName)
         cell.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapImage(_:))))
         return cell
     }
     
     @objc func tapImage(_ sender: UITapGestureRecognizer) {
-        let location = sender.location(in: self.collectionView)
-        let indexPath = self.collectionView?.indexPathForItem(at: location)
+        let location = sender.location(in: collectionView)
+        let indexPath = collectionView?.indexPathForItem(at: location)
         
-        if let index = indexPath {
-            print("Got clicked on index: \(index)!")
-        }
+        let creatorName = results[indexPath!.row].user.name
+        let profileURL = results[indexPath!.row].user.links.html
+        let downloadLocaion = results[indexPath!.row].urls.full
+        
+        print("download location: \(downloadLocaion)") // Returns a URL, but I don't know  where to go from here...
+        
+        let actionSheet = UIAlertController(title: "Image options", message: "You can use this image in your project, or tap to view \(creatorName) on Unsplash.", preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        actionSheet.addAction(UIAlertAction(title: "View \(creatorName) on Unsplash", style: .default, handler: { action in
+            if let path = URL(string: "\(profileURL)?utm_source=The-Alliance-Project&utm_medium=referral") {
+                    UIApplication.shared.open(path, options: [:], completionHandler: nil)
+            }
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Use this image", style: .default, handler: { [weak self] action in
+            guard let strongSelf = self else {
+                return
+            }
+            if let index = indexPath {
+                print("Using image from index: \(index)!")
+                strongSelf.completion!(strongSelf.results[indexPath!.row])
+                strongSelf.navigationController?.popViewController(animated: true)
+            }
+        }))
+        
+        present(actionSheet, animated: true, completion: nil)
     }
     
 }

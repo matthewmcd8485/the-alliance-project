@@ -16,6 +16,7 @@
 
 #import <objc/runtime.h>
 
+#import "GoogleUtilities/ISASwizzler/GULObjectSwizzler+Internal.h"
 #import "GoogleUtilities/ISASwizzler/Public/GoogleUtilities/GULSwizzledObject.h"
 
 @implementation GULObjectSwizzler {
@@ -80,7 +81,7 @@
   }
 
   GULObjectSwizzler *existingSwizzler =
-      [[self class] getAssociatedObject:object key:kSwizzlerAssociatedObjectKey];
+      [[self class] getAssociatedObject:object key:kGULSwizzlerAssociatedObjectKey];
   if ([existingSwizzler isKindOfClass:[GULObjectSwizzler class]]) {
     // The object has been swizzled already, no need to swizzle again.
     return existingSwizzler;
@@ -130,7 +131,7 @@
   __strong id swizzledObject = _swizzledObject;
 
   GULObjectSwizzler *existingSwizzler =
-      [[self class] getAssociatedObject:swizzledObject key:kSwizzlerAssociatedObjectKey];
+      [[self class] getAssociatedObject:swizzledObject key:kGULSwizzlerAssociatedObjectKey];
   if (existingSwizzler != nil) {
     NSAssert(existingSwizzler == self, @"The swizzled object has a different swizzler.");
     // The object has been swizzled already.
@@ -139,7 +140,7 @@
 
   if (swizzledObject) {
     [GULObjectSwizzler setAssociatedObject:swizzledObject
-                                       key:kSwizzlerAssociatedObjectKey
+                                       key:kGULSwizzlerAssociatedObjectKey
                                      value:self
                                association:GUL_ASSOCIATION_RETAIN];
 
@@ -159,11 +160,23 @@
 }
 
 - (void)dealloc {
+  // When the Zombies instrument is enabled, a zombie is created for the
+  // swizzled object upon deallocation. Because this zombie subclasses
+  // the generated class, the swizzler should not dispose it during the
+  // swizzler's deallocation. The `zombiesEnabled` value is used to guard calls
+  // to dispose the generated class.
+  NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+  BOOL zombiesEnabled = [[environment objectForKey:@"NSZombieEnabled"] boolValue];
+
   if (_generatedClass) {
     if (_swizzledObject == nil) {
       // The swizzled object has been deallocated already, so the generated class can be disposed
       // now.
-      objc_disposeClassPair(_generatedClass);
+
+      // Do not dispose the generated class if zombies is enabled.
+      if (!zombiesEnabled) {
+        objc_disposeClassPair(_generatedClass);
+      }
       return;
     }
 
@@ -183,10 +196,13 @@
     if (isSwizzledObjectInstanceOfGeneratedClass) {
       Class generatedClass = _generatedClass;
 
-      // Schedule the generated class disposal after the swizzled object has been deallocated.
-      dispatch_async(dispatch_get_main_queue(), ^{
-        objc_disposeClassPair(generatedClass);
-      });
+      // Do not dispose the generated class if zombies is enabled.
+      if (!zombiesEnabled) {
+        // Schedule the generated class disposal after the swizzled object has been deallocated.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          objc_disposeClassPair(generatedClass);
+        });
+      }
     }
   }
 }

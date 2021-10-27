@@ -7,3 +7,10 @@
 //
 
 import Foundation
+
+struct UnsplashUser: Codable {
+    let name: String
+    let id: String
+    let username: String
+    let links: ProfileURLs
+}

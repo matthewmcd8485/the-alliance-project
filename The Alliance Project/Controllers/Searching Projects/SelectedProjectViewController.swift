@@ -19,24 +19,29 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
     
     var projectTitle: String?
     var projectCreatorName: String?
-    var projectCategory: String?
     var creatorEmail: String?
+    var dateCreated: String?
     var creatorFCMToken: String?
     
+    @IBOutlet weak var unsplashProfileButton: UIButton!
+    @IBOutlet weak var sendMessageLabel: UILabel!
     @IBOutlet weak var projectTitleLabel: UILabel!
     @IBOutlet weak var dateCreatedLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var categoryLabel: UILabel!
     @IBOutlet weak var viewsLabel: UILabel!
-    @IBOutlet weak var interestedInHelpingLabel: UILabel!
     @IBOutlet weak var userDetailsButton: UIButton!
-    
     @IBOutlet weak var profileImageView: UIImageView!
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    @IBOutlet weak var backgroundDimView: UIView!
+    @IBOutlet weak var sendMessageIcon: UIImageView!
+    @IBOutlet weak var viewCountIcon: UIImageView!
+    @IBOutlet weak var descriptionIcon: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "PROJECT DETAILS"
+        navigationItem.title = "Project Details"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -49,11 +54,13 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
         let barButton = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = barButton
         
-        profileImageView.layer.cornerRadius = 30
+        profileImageView.layer.cornerRadius = 10
         profileImageView.clipsToBounds = true
-        profileImageView.isHidden = true
-        
-        projectCreatorName = UserDefaults.standard.string(forKey: "projectCreatorName")
+        profileImageView.alpha = 0
+        backgroundImageView.alpha = 0
+        backgroundDimView.alpha = 0
+        unsplashProfileButton.alpha = 0
+
         creatorEmail = UserDefaults.standard.string(forKey: "creatorEmail")
         projectTitle = UserDefaults.standard.string(forKey: "projectTitle")
         
@@ -127,12 +134,16 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
                             if error != nil {
                                 print("Failed to download user's profile url:", error!)
                                 // Image does not exist
-                                self?.profileImageView.isHidden = false
+                                UIView.animate(withDuration: 0.5) {
+                                    self?.profileImageView.alpha = 1
+                                }
                                 return
                             } else {
                                 DispatchQueue.main.async {
                                     self?.profileImageView.sd_setImage(with: url!, completed: nil)
-                                    self?.profileImageView.isHidden = false
+                                    UIView.animate(withDuration: 0.5) {
+                                        self?.profileImageView.alpha = 1
+                                    }
                                 }
                             }
                         })
@@ -142,12 +153,16 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
         }
     }
     
+    // [0] = Image URL, [1] = Creator Name, and [2] = Creator Profile URL
+    var backgroundImageStrings: [String] = [""]
+    
     // MARK: - Loading Project
     func loadProjectData() {
-        db.collection("users").document("\(creatorEmail!)").collection("projects").whereField("Project Title", isEqualTo: projectTitle!).getDocuments() { [weak self] (querySnapshot, err) in
+        db.collection("users").document("\(creatorEmail!)").collection("projects").whereField("Project Title", isEqualTo: projectTitle!).whereField("Date Created", isEqualTo: dateCreated!).getDocuments() { [weak self] (querySnapshot, err) in
             guard let strongSelf = self else {
                 return
             }
+            
             if let err = err {
                 print("Error getting project documents: \(err)")
             } else {
@@ -160,8 +175,22 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
                         print("\(document.documentID) => \(document.data())")
                         
                         let creatorName = document.get("Creator Name") as! String
+                        let fcmToken = document.get("Creator FCM Token") as? String
+                        let date = document.get("Date Created") as! String
+                        let projectID = document.get("Project ID") as? String ?? ""
+                        let description = document.get("Project Description") as! String
+                        let category = document.get("Category") as! String
+                        let backgroundImageURL = document.get("Background Image URL") as? String ?? ""
+                        let backgroundImageProfileURL = document.get("Background Image Creator Profile URL") as? String ?? ""
+                        let backgroundImageUserName = document.get("Background Image Creator Name") as? String ?? ""
+                        
+                        strongSelf.creatorFCMToken = fcmToken
                         strongSelf.projectCreatorName = creatorName
-                        strongSelf.creatorFCMToken = document.get("Creator FCM Token") as? String
+                        
+                        let project = Project(title: strongSelf.projectTitle!, email: strongSelf.creatorEmail!, name: creatorName, date: date, category: category, description: description, backgroundImageURL: backgroundImageURL, backgroundImageCreatorName: backgroundImageUserName, backgroundImageCreatorProfileURL: backgroundImageProfileURL, projectID: projectID)
+                        
+                        self?.backgroundImageStrings = [backgroundImageURL, backgroundImageUserName, backgroundImageProfileURL]
+                        self?.updateUI(with: project)
                         
                         UserDefaults.standard.set(creatorName, forKey: "projectCreatorName")
                         
@@ -173,18 +202,83 @@ class SelectedProjectViewController: UIViewController, MFMailComposeViewControll
                         } else {
                             strongSelf.viewsLabel.text = "\(views) views"
                         }
-                        
-                        strongSelf.projectCategory = document.get("Category") as? String
-                        
-                        strongSelf.projectTitleLabel.text = document.get("Project Title") as? String
-                        strongSelf.categoryLabel.text = document.get("Category") as? String
-                        strongSelf.dateCreatedLabel.text = "Created by \(strongSelf.projectCreatorName!) on \(document.get("Date Created")!)"
-                        strongSelf.descriptionLabel.text = document.get("Project Description") as? String
-                        strongSelf.interestedInHelpingLabel.text = "Interested in helping? Let \(strongSelf.projectCreatorName!) know!"
                     }
                 }
             }
         }
+    }
+    
+    private func updateUI(with project: Project) {
+        DispatchQueue.main.async { [weak self] in
+            self?.projectTitleLabel.text = project.title
+            self?.categoryLabel.text = project.category
+            self?.dateCreatedLabel.text = "Created by \(project.name) on \(project.date)"
+            self?.descriptionLabel.text = project.description
+            
+            self?.unsplashProfileButton.setTitle("Image by \(self?.backgroundImageStrings[1] ?? "") on Unsplash", for: .normal)
+
+        }
+        loadBackgroundImage(for: project.backgroundImageURL)
+    }
+    
+    private func loadBackgroundImage(for url: String) {
+        guard url != "" else {
+            return
+        }
+        guard let imageURL = URL(string: url) else {
+            return
+        }
+        
+        let token = "dAThptNKlrO869ksueV0rYJANsIYqqnTjCmW4Qq0T2s"
+        var request = URLRequest(url: imageURL)
+        request.httpMethod = "GET"
+        request.setValue("Client-ID \(token)", forHTTPHeaderField: "Authorization")
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            DispatchQueue.main.async {
+                let image = UIImage(data: data)
+                self?.backgroundImageView.image = image
+                
+                UIView.animate(withDuration: 0.5) {
+                    self?.backgroundDimView.alpha = 1
+                    self?.backgroundImageView.alpha = 1
+                    self?.viewsLabel.textColor = .white
+                    self?.projectTitleLabel.textColor = UIColor(named: "lightPurpleColor")
+                    self?.unsplashProfileButton.alpha = 1
+                    self?.unsplashProfileButton.setTitleColor(UIColor(named: "lightPurpleColor"), for: .normal)
+                    self?.descriptionLabel.textColor = .white
+                    self?.categoryLabel.textColor = .white
+                    self?.sendMessageLabel.textColor = .white
+                    self?.descriptionIcon.tintColor = UIColor(named: "lightPurpleColor")
+                    self?.viewCountIcon.tintColor = UIColor(named: "lightPurpleColor")
+                    self?.sendMessageIcon.tintColor = UIColor(named: "lightPurpleColor")
+                }
+                
+            }
+        }.resume()
+        
+    }
+    
+    @IBAction func viewUnsplashProfileButton(_ sender: Any) {
+        guard unsplashProfileButton.titleLabel?.text != "" else {
+            return
+        }
+        
+        let actionSheet = UIAlertController(title: "View \(backgroundImageStrings[1])'s Unsplash Profile", message: "This will send you outside of The Alliance Project. Continue?", preferredStyle: .actionSheet)
+        actionSheet.addAction((UIAlertAction(title: "View \(backgroundImageStrings[1]) on Unsplash", style: .default, handler: { action in
+            if let path = URL(string: "\(self.backgroundImageStrings[2])?utm_source=The-Alliance-Project&utm_medium=referral") {
+                    UIApplication.shared.open(path, options: [:], completionHandler: nil)
+            }
+        })))
+        actionSheet.addAction(UIAlertAction(title: "Visit the Unsplash homepage", style: .default, handler: { action in
+            if let path = URL(string: "https://unsplash.com?utm_source=The-Alliance-Project&utm_medium=referral") {
+                    UIApplication.shared.open(path, options: [:], completionHandler: nil)
+            }
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(actionSheet, animated: true, completion: nil)
     }
     
     @IBAction func backButton(_ sender: Any) {

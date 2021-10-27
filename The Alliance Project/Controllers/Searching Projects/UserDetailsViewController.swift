@@ -25,18 +25,24 @@ class UserDetailsViewController: UIViewController {
     @IBOutlet weak var channelLabel: UILabel!
     @IBOutlet weak var twitterLabel: UILabel!
     @IBOutlet weak var websiteLabel: UILabel!
+    @IBOutlet weak var unsplashButton: UIButton!
+    
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    @IBOutlet weak var backgroundDimView: UIView!
     
     var instagramAccount: String = ""
     var twitterAccount: String = ""
     var youtubeChannel: String = ""
     var websiteLink: String = ""
+    var name: String = ""
     
     @IBOutlet weak var profileImageView: UIImageView!
     
+    // MARK: - Override functions
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "USER DETAILS"
+        navigationItem.title = "User Details"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -51,7 +57,12 @@ class UserDetailsViewController: UIViewController {
         
         profileImageView.layer.cornerRadius = 30
         profileImageView.clipsToBounds = true
-        profileImageView.isHidden = true
+        profileImageView.alpha = 0
+        
+        backgroundImageView.alpha = 0
+        backgroundDimView.alpha = 0
+        
+        unsplashButton.alpha = 0
         
         loadUserImage()
         loadUserData()
@@ -73,7 +84,7 @@ class UserDetailsViewController: UIViewController {
                 
                 // Add user to collection of reportees
                 let date = FormatDate.dateFormatter.string(from: Date())
-                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.nameLabel.text)!, date: date, kind: "Inappropriate", completion: { success in
+                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.name)!, date: date, kind: "Inappropriate", completion: { success in
                     if success {
                         strongSelf.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")
                     }
@@ -88,7 +99,7 @@ class UserDetailsViewController: UIViewController {
                 
                 // Add user to collection of reportees
                 let date = FormatDate.dateFormatter.string(from: Date())
-                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.nameLabel.text)!, date: date, kind: "Spam", completion: { success in
+                ReportingManager.shared.reportUser(with: strongSelf.projectCreatorEmail!, name: (self?.name)!, date: date, kind: "Spam", completion: { success in
                     if success {
                         strongSelf.alertManager.showAlert(title: "Thank you", message: "Your report has been received. Thank you for helping us maintain a safe and inclusive community on The Alliance Project.")
                     }
@@ -139,11 +150,18 @@ class UserDetailsViewController: UIViewController {
                         print("\(document.documentID) => \(document.data())")
                         
                         let name = document.get("Full Name") as! String
-                        self.nameLabel.text = name
+                        self.name = name
+                        self.nameLabel.text = "Hi, I'm \(name)"
                         
                         let email = document.get("Email Address") as! String
-                        let profileImageURL: String = document.get("Profile Image URL") as! String
-                        print(profileImageURL)
+                        let backgroundImageURL = document.get("Profile Background Image URL") as? String ?? ""
+                        let backgroundImageName = document.get("Profile Background Image Creator Name") as? String ?? "[Unknown User]"
+                        let backgroundImageProfileURL = document.get("Profile Background Image Creator Profile Link") as? String ?? "https://www.unsplash.com"
+                        
+                        self.backgroundImageStrings = [backgroundImageURL, backgroundImageName, backgroundImageProfileURL]
+                        
+                        self.unsplashButton.setTitle("Image by \(backgroundImageName) on Unsplash", for: .normal)
+                        self.configureBackgroundImage(with: backgroundImageURL)
                         
                         // Look for user's profile image
                         let storageRef = Storage.storage().reference().child("profile images").child("\(email) - profile image.png")
@@ -151,18 +169,94 @@ class UserDetailsViewController: UIViewController {
                             if error != nil {
                                 print("Failed to download user's profile url:", error!)
                                 // Image does not exist
-                                self?.profileImageView.isHidden = false
+                                UIView.animate(withDuration: 0.5) {
+                                    self?.profileImageView.alpha = 1
+                                }
                                 return
                             } else {
                                 DispatchQueue.main.async {
                                     self?.profileImageView.sd_setImage(with: url!, completed: nil)
-                                    self?.profileImageView.isHidden = false
+                                    UIView.animate(withDuration: 0.5) {
+                                        self?.profileImageView.alpha = 1
+                                    }
                                 }
                             }
                         })
                     }
                 }
             }
+        }
+    }
+    
+    // MARK: - Load Background Image
+    
+    // [0] = Image URL, [1] = Creator Name, and [2] = Creator Profile URL
+    var backgroundImageStrings: [String] = ["", "", ""]
+    
+    private func configureBackgroundImage(with urlString: String) {
+        guard let url = URL(string: urlString) else {
+            return
+        }
+        
+        let token = "dAThptNKlrO869ksueV0rYJANsIYqqnTjCmW4Qq0T2s"
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Client-ID \(token)", forHTTPHeaderField: "Authorization")
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                let image = UIImage(data: data)
+                self?.backgroundImageView.image = image
+                
+                UIView.animate(withDuration: 0.5) {
+                    self?.backgroundDimView.alpha = 1
+                    self?.backgroundImageView.alpha = 1
+                    self?.unsplashButton.alpha = 1
+                    self?.unsplashButton.setTitleColor(UIColor(named: "lightPurpleColor"), for: .normal)
+                    self?.instagramLabel.textColor = .white
+                    self?.channelLabel.textColor = .white
+                    self?.twitterLabel.textColor = .white
+                    self?.websiteLabel.textColor = .white
+                    self?.tapBelowLabel.textColor = .white
+                    self?.nameLabel.textColor = .white
+                    self?.localityLabel.textColor = .white
+                }
+                
+            }
+        }.resume()
+    }
+    
+    @IBAction func unsplashButtonPressed(_ sender: Any) {
+        guard unsplashButton.titleLabel?.text != "" else {
+            return
+        }
+        
+        if backgroundImageStrings[1] == "[Unknown User]" {
+            let actionSheet = UIAlertController(title: "Visit the Unsplash Website", message: "There was an issue loading the background image creator's info, so we have to redirect you to Unsplash's home page instead. This will send you outside of The Alliance Project. Continue?", preferredStyle: .actionSheet)
+            actionSheet.addAction((UIAlertAction(title: "Visit the Unsplash website", style: .default, handler: { action in
+                if let path = URL(string: "https://www.unsplash.com?utm_source=The-Alliance-Project&utm_medium=referral") {
+                        UIApplication.shared.open(path, options: [:], completionHandler: nil)
+                }
+            })))
+            actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(actionSheet, animated: true, completion: nil)
+        } else {
+            let actionSheet = UIAlertController(title: "View \(backgroundImageStrings[1])'s Unsplash Profile", message: "This will send you outside of The Alliance Project. Continue?", preferredStyle: .actionSheet)
+            actionSheet.addAction((UIAlertAction(title: "View \(backgroundImageStrings[1]) on Unsplash", style: .default, handler: { action in
+                if let path = URL(string: "\(self.backgroundImageStrings[2])?utm_source=The-Alliance-Project&utm_medium=referral") {
+                        UIApplication.shared.open(path, options: [:], completionHandler: nil)
+                }
+            })))
+            actionSheet.addAction(UIAlertAction(title: "Visit the Unsplash homepage", style: .default, handler: { action in
+                if let path = URL(string: "https://unsplash.com?utm_source=The-Alliance-Project&utm_medium=referral") {
+                        UIApplication.shared.open(path, options: [:], completionHandler: nil)
+                }
+            }))
+            actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            present(actionSheet, animated: true, completion: nil)
         }
     }
     
@@ -180,7 +274,8 @@ class UserDetailsViewController: UIViewController {
                     for document in querySnapshot!.documents {
                         print("\(document.documentID) => \(document.data())")
                         
-                        self.localityLabel.text = document.get("Locality") as? String
+                        let location = document.get("Locality") as? String ?? "somewhere in the matrix"
+                        self.localityLabel.text = "I'm from \(location)"
                         self.tapBelowLabel.text = "Tap below to visit \(document.get("Full Name")!)'s social media accounts"
                         
                         if document.get("Instagram") as? String != "" {

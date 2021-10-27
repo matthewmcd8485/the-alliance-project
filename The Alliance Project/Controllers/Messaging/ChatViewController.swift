@@ -24,6 +24,7 @@ class ChatViewController: MessagesViewController {
     private var otherUserPhotoURL: URL?
     
     let alertManager = AlertManager.shared
+    let profanityManager = ProfanityManager.shared
     
     public var isNewConversation = false
     public let otherUserEmail: String
@@ -139,7 +140,7 @@ class ChatViewController: MessagesViewController {
     // MARK: - Location Picker
     private func presentLocationPicker() {
         let vc = LocationPickerViewController(coordinates: nil)
-        vc.title = "Pick Location"
+        vc.navigationItem.title = "Pick Location"
         vc.navigationItem.largeTitleDisplayMode = .never
         vc.completion = { [weak self] selectedCoordinates in
             guard let strongSelf = self else {
@@ -237,7 +238,7 @@ class ChatViewController: MessagesViewController {
                 
                 if shouldScrollToBottom {
                     DispatchQueue.main.async {
-                        self?.messagesCollectionView.scrollToBottom(animated: true)
+                        self?.messagesCollectionView.scrollToLastItem(animated: true)
                     }
                 }
             case .failure(let error):
@@ -280,7 +281,7 @@ class ChatViewController: MessagesViewController {
         
         if shouldScrollToBottom {
             DispatchQueue.main.async {
-                self.messagesCollectionView.scrollToBottom(animated: true)
+                self.messagesCollectionView.scrollToLastItem(animated: true)
             }
         }
     }
@@ -309,7 +310,7 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                 case .success(let urlString):
                     print("Uploaded message photo: \(urlString)")
                     
-                    guard let url = URL(string: urlString), let placeholder = UIImage(systemName: "plus"), let name = self?.title else {
+                    guard let url = URL(string: urlString), let placeholder = UIImage(systemName: "plus"), let name = self?.navigationItem.title else {
                         return
                     }
                     
@@ -340,7 +341,7 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
                 case .success(let urlString):
                     print("Uploaded message video: \(urlString)")
                     
-                    guard let url = URL(string: urlString), let placeholder = UIImage(systemName: "plus"), let name = self?.title else {
+                    guard let url = URL(string: urlString), let placeholder = UIImage(systemName: "plus"), let name = self?.navigationItem.title else {
                         return
                     }
                     
@@ -371,28 +372,12 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             return
         }
         
-        let blockedWords = BlockedWords.shared.blockedWords()
-        var messageIsAcceptable = true
-        
         // Check the strings for bad words in the array
-        var messageContains = false
-        
-        let messageArray = text.components(separatedBy: " ")
-        for badWord in blockedWords {
-            for word in messageArray {
-                if word.lowercased() == badWord {
-                    messageContains = true
-                    messageIsAcceptable = false
-                }
-            }
-        }
-        
-        if messageContains {
+        let messageContainsProfanity = profanityManager.checkForProfanity(in: text)
+        if messageContainsProfanity {
             alertManager.showAlert(title: "Inappropriate language", message: "There are some less-than-ideal words in your message. Please make it more appropriate.")
             return
-        }
-        
-        if messageIsAcceptable {
+        } else {
             inputBar.inputTextView.text = ""
             
             print("Sending \(text)")
@@ -401,7 +386,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             let message = Message(sender: selfSender, messageId: messageID, sentDate: Date(), kind: .text(text))
             if isNewConversation {
                 // create new convo in database
-                DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", otherUserFcmToken: otherUserFcmToken!, firstMessage: message, completion: { [weak self] success in
+                DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.navigationItem.title ?? "User", otherUserFcmToken: otherUserFcmToken!, firstMessage: message, completion: { [weak self] success in
                     if success {
                         print("Message sent!")
                         self?.isNewConversation = false
@@ -416,7 +401,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 })
             } else {
                 // append to existing convo data
-                guard let conversationID = conversationID, let name = self.title else {
+                guard let conversationID = conversationID, let name = self.navigationItem.title else {
                     return
                 }
                 
@@ -428,7 +413,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                     if success {
                         print("Message sent!")
                         strongSelf.insertNewMessage(message)
-                        strongSelf.messagesCollectionView.scrollToBottom(animated: true)
+                        strongSelf.messagesCollectionView.scrollToLastItem(animated: true)
                     } else {
                         print("Failed to send")
                     }
@@ -579,7 +564,7 @@ extension ChatViewController: MessageCellDelegate {
         case .location(let locationData):
             let coordinates = locationData.location.coordinate
             let vc = LocationPickerViewController(coordinates: coordinates)
-            vc.title = "Location"
+            vc.navigationItem.title = "Location"
             
             self.navigationController?.pushViewController(vc, animated: true)
         default:

@@ -19,7 +19,7 @@ final class ReportingManager {
     public func userIsBlocked(for email: String) -> Bool {
         let blockedUsers = UserDefaults.standard.stringArray(forKey: "blockedUsers") ?? [""]
         
-        guard !blockedUsers.isEmpty else {
+        guard !blockedUsers.isEmpty, blockedUsers[0] != "" else {
             return false
         }
         

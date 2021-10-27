@@ -17,13 +17,16 @@ target 'The Alliance Project' do
 	pod 'Firebase/Crashlytics'
 	pod 'Firebase/Analytics'
   	pod 'FirebaseUI'
-	pod 'MessageKit'
+	#pod 'MessageKit'
 	pod 'JGProgressHUD'
 	pod 'RealmSwift'
 	pod 'SDWebImage'
 
 	#Facebook Login
-	pod 'FBSDKLoginKit'
+	#pod 'FBSDKLoginKit'
+	#pod 'FBSDKCoreKit'
+	#pod 'FBSDKShareKit'
+
 
 	#Google Login
 	pod 'GoogleSignIn'

@@ -15,7 +15,7 @@ class AboutThisAppViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "ABOUT"
+        navigationItem.title = "About"
         
         let backButton = BackBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem = backButton

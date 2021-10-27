@@ -7,3 +7,10 @@
 //
 
 import Foundation
+
+struct URLS: Codable {
+    let regular: String
+    let full: String
+    let small: String
+    let thumb: String
+}

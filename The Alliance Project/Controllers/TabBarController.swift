@@ -6,4 +6,8 @@
 //  Copyright © 2021 Matthew McDonnell. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+class TabBarController: UITabBarController, UITabBarControllerDelegate {
+    
+}

@@ -12,7 +12,7 @@ import Firebase
 import FirebaseRemoteConfig
 import FirebaseFirestore
 import FirebaseStorage
-import FirebaseUI
+import FirebaseAuthUI
 import GoogleSignIn
 import AuthenticationServices
 
@@ -62,7 +62,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
     private func setupRemoteConfigDefaults() {
@@ -141,24 +141,6 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
     var email: String = ""
     var profileImageURL: String = ""
     
-    func createSpinnerView() {
-        let child = SpinnerViewController()
-        
-        // add the spinner view controller
-        addChild(child)
-        child.view.frame = view.frame
-        view.addSubview(child.view)
-        child.didMove(toParent: self)
-        
-        // wait two seconds to simulate some work happening
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            // then remove the spinner view controller
-            child.willMove(toParent: nil)
-            child.view.removeFromSuperview()
-            child.removeFromParent()
-        }
-    }
-    
     // MARK: - FirebaseUI Auth
     func authUI(_ authUI: FUIAuth, didSignInWith authDataResult: AuthDataResult?, error: Error?) {
         if error != nil {
@@ -220,12 +202,15 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                                 UserDefaults.standard.set(true, forKey: "loggedIn")
                                 UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
                                 UserDefaults.standard.set([""], forKey: "blockedUsers")
+                                UserDefaults.standard.set(["", "", ""], forKey: "profileBackgroundImageArray")
                                 
                                 DispatchQueue.main.async {
                                     Messaging.messaging().subscribe(toTopic: "All users") { error in
                                         print("Subscribed to notification topic: All users")
                                     }
-                                    strongSelf.navigationController?.popViewController(animated: true)
+                                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                                    let mainScreen = storyboard.instantiateViewController(identifier: "tabBarController") as! TabBarController
+                                    strongSelf.navigationController?.pushViewController(mainScreen, animated: true)
                                 }
                             })
                         // Profile Image Upload Failed
@@ -254,6 +239,9 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                             let youtube = document.get("YouTube")
                             let website = document.get("Website")
                             let profileImageURL: String = document.get("Profile Image URL") as! String
+                            let profileBackgroundImageURL = document.get("Profile Background Image URL") as? String ?? ""
+                            let profileBackgroundImageName = document.get("Profile Background Image Creator Name") as? String ?? ""
+                            let profileBackgroundImageCreatorLink = document.get("Profile Background Image Creator Profile Link") as? String ?? ""
                             
                             if profileImageURL != "No profile picture yet" {
                                 let storageRef = Storage.storage().reference(withPath: "profile images/\(email!) - profile image.png")
@@ -279,6 +267,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                             UserDefaults.standard.set(user.uid, forKey: "userIdentifier")
                             UserDefaults.standard.set([""], forKey: "blockedUsers")
                             UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
+                            UserDefaults.standard.set([profileBackgroundImageURL, profileBackgroundImageName, profileBackgroundImageCreatorLink], forKey: "profileBackgroundImageArray")
                         }
                         
                         // Update the list of blocked users
@@ -289,9 +278,9 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
                         })
                         
                         UserDefaults.standard.set(true, forKey: "loggedIn")
-                        DispatchQueue.main.async {
-                            self?.navigationController?.popViewController(animated: true)
-                        }
+                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                        let mainScreen = storyboard.instantiateViewController(identifier: "tabBarController") as! TabBarController
+                        strongSelf.navigationController?.pushViewController(mainScreen, animated: true)
                     }
                 }
             }
@@ -330,7 +319,7 @@ class OnboardingViewController: UIViewController, CLLocationManagerDelegate, FUI
     private func startLocationServices() {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         
-        let locationAuthorizationStatus = CLLocationManager.authorizationStatus()
+        let locationAuthorizationStatus = locationManager.authorizationStatus // MIGHT THROW ERROR
         switch locationAuthorizationStatus {
         case .notDetermined: self.locationManager.requestWhenInUseAuthorization()
         case .authorizedAlways, .authorizedWhenInUse: if CLLocationManager.locationServicesEnabled() {

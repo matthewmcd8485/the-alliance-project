@@ -61,6 +61,7 @@ class ConversationTableViewCell: UITableViewCell {
     }
     
     public func configure(with model: Conversation) {
+        userImageView.alpha = 0
         switch model.latestMessage.kind {
         case .location:
             userMessageLabel.text = "Attachment: 1 Location"
@@ -82,6 +83,9 @@ class ConversationTableViewCell: UITableViewCell {
             } else {
                 DispatchQueue.main.async {
                     self?.userImageView.sd_setImage(with: url!, completed: nil)
+                    UIView.animate(withDuration: 0.5) {
+                        self?.userImageView.alpha = 1
+                    }
                 }
             }
         })

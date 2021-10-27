@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 import AuthenticationServices
-import FirebaseUI
+import FirebaseAuthUI
 import FirebaseStorage
 import FirebaseFirestore
 import GoogleSignIn
@@ -23,7 +23,7 @@ class DeleteAccountViewController: UIViewController, FUIAuthDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "DELETE ACCOUNT"
+        navigationItem.title = "Delete Account"
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
         
@@ -102,6 +102,7 @@ class DeleteAccountViewController: UIViewController, FUIAuthDelegate {
                     UserDefaults.standard.set("", forKey: "fullName")
                     UserDefaults.standard.set([""], forKey: "blockedUsers")
                     UserDefaults.standard.set(false, forKey: "locationErrorDismissal")
+                    UserDefaults.standard.set(["", "", ""], forKey: "profileBackgroundImageArray")
                 }
             }
             

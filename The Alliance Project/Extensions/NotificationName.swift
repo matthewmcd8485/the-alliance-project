@@ -10,4 +10,5 @@ import Foundation
 
 extension Notification.Name {
     static let didLogInNotification = Notification.Name("didLogInNotification")
+    static let refreshAllTabs = Notification.Name("RefreshAllTabs")
 }

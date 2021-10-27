@@ -7,3 +7,27 @@
 //
 
 import Foundation
+
+struct ProjectSearchType {
+    let category: String?
+    let searchForAll: Bool?
+    let keyword: String?
+    
+    init(category: String) {
+        self.category = category
+        self.searchForAll = nil
+        self.keyword = nil
+    }
+    
+    init(searchForAll: Bool) {
+        self.category = nil
+        self.searchForAll = searchForAll
+        self.keyword = nil
+    }
+    
+    init(keyword: String) {
+        self.category = nil
+        self.searchForAll = nil
+        self.keyword = keyword
+    }
+}

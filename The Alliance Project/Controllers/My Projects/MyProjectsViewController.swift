@@ -10,8 +10,6 @@ import UIKit
 import Firebase
 import FirebaseFirestore
 
-class InstructionsViewController: UIViewController {}
-
 class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let db = Firestore.firestore()
@@ -32,7 +30,7 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
         navigationItem.backBarButtonItem = backButton
         
         noProjectsLabel.text = "Loading..."
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(MyProjectTableViewCell.self, forCellReuseIdentifier: MyProjectTableViewCell.identifier)
         tableView.tableFooterView = UIView(frame: CGRect.zero)
         
         setupTableView()
@@ -42,21 +40,17 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadProjects()
     }
     
     // MARK: - Load Projects
     let email = UserDefaults.standard.string(forKey: "email")
     func loadProjects() {
-        if projectsArray.count > 0 {
-            projectsArray.removeAll()
-            tableView.reloadData()
-        }
         
         db.collection("users").document("\(email!)").collection("projects").getDocuments() { [weak self] (querySnapshot, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
             } else {
+                self?.projectsArray.removeAll()
                 for document in querySnapshot!.documents {
                     
                     let data = document.data()
@@ -65,23 +59,20 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
                     let name = data["Creator Name"] as? String ?? ""
                     let date = data["Date Created"] as? String ?? ""
                     let email = data["Creator Email"] as? String ?? ""
-                    let backgroundImageURL = data["Background Image URL"] as? String ?? nil
+                    let backgroundImageURL = data["Background Image URL"] as? String ?? ""
+                    let projectID = data["Project ID"] as? String ?? ""
                     
-                    let project = Project(title: title, email: email, name: name, date: date, category: category, backgroundImageURL: backgroundImageURL)
+                    let project = Project(title: title, email: email, name: name, date: date, category: category, description: "", backgroundImageURL: backgroundImageURL, backgroundImageCreatorName: "", backgroundImageCreatorProfileURL: "", projectID: projectID)
                     self?.projectsArray.append(project)
-                    
                 }
             }
-            
-            let filteredProjects = self?.projectsArray.filterDuplicates { $0.date == $1.date }
-            
-            if filteredProjects?.count != 0 {
+          
+            if self?.projectsArray.count != 0 {
                 self?.noProjectsLabel.text = ""
-                self?.projectsArray = filteredProjects!
             } else {
                 self?.noProjectsLabel.text = "Create your first project now!"
             }
-            
+          
             self?.tableView.reloadData()
             self?.refreshControl.endRefreshing()
         }
@@ -117,12 +108,15 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
         return 1
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 100
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let cell = tableView.cellForRow(at: indexPath)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "projectEditVC") as! ProjectEditViewController
-        vc.projectTitle = cell?.textLabel?.text
+        vc.projectTitle = projectsArray[indexPath.row].title
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -131,15 +125,12 @@ class MyProjectsViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let project = projectsArray[indexPath.row]
-        cell.textLabel?.font = UIFont(name:"AcherusGrotesque-Light", size: 30)
-        cell.textLabel?.textColor = UIColor(named: "purpleColor")
+        let model = projectsArray[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: MyProjectTableViewCell.identifier, for: indexPath) as! MyProjectTableViewCell
         cell.backgroundColor = UIColor(named: "backgroundColors")
-        cell.textLabel?.text = project.title
-        cell.textLabel?.textAlignment = .center
         cell.accessoryType = .disclosureIndicator
-        
-        return(cell)
+        cell.contentView.clipsToBounds = true
+        cell.configure(with: model)
+        return cell
     }
 }

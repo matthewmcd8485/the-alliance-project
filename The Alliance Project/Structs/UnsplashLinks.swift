@@ -7,3 +7,9 @@
 //
 
 import Foundation
+
+struct UnsplashLinks: Codable {
+    let html: String
+    let download: String
+    let download_location: String
+}

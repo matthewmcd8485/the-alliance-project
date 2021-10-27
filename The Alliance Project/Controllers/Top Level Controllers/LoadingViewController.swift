@@ -9,19 +9,18 @@
 import UIKit
 import Firebase
 import FirebaseAuth
-import FirebaseUI
+import FirebaseAuthUI
 import FirebaseFirestore
 import FirebaseCrashlytics
+import JGProgressHUD
 import AuthenticationServices
 
 class LoadingViewController: UIViewController {
     
-    @IBOutlet var needLabel: UILabel!
-    @IBOutlet var canLabel: UILabel!
-    
     var user: User?
-    
     let authUI = FUIAuth.defaultAuthUI()
+    
+    @IBOutlet weak var logoImage: UIImageView!
     
     // MARK: - Override Functions
     override func viewDidLoad() {
@@ -30,27 +29,11 @@ class LoadingViewController: UIViewController {
         title = ""
         let attributes = [NSAttributedString.Key.font: UIFont(name: "AcherusGrotesque-Bold", size: 18)!]
         UINavigationBar.appearance().titleTextAttributes = attributes
-        
-        // Adjust custom color for the "I NEED HELP" label
-        let needStringOne = "I NEED HELP"
-        let needStringTwo = "NEED"
-        let needRange = (needStringOne as NSString).range(of: needStringTwo)
-        let needAttributedText = NSMutableAttributedString.init(string: needStringOne)
-        needAttributedText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor(named: "purpleColor")!, range: needRange)
-        needLabel.attributedText = needAttributedText
-        
-        // Adjust custom color for the "I CAN HELP" label
-        let canStringOne = "I CAN HELP"
-        let canStringTwo = "CAN"
-        let canRange = (canStringOne as NSString).range(of: canStringTwo)
-        let canAttributedText = NSMutableAttributedString.init(string: canStringOne)
-        canAttributedText.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor(named: "purpleColor")!, range: canRange)
-        canLabel.attributedText = canAttributedText
-        
-        tabBarItem.title = ""
+
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        createSpinnerView()
         showLoginIfNecessary()
         
     }
@@ -62,26 +45,18 @@ class LoadingViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
         navigationController?.navigationBar.backItem?.backBarButtonItem?.tintColor = UIColor(named: "purpleColor")
     }
     
     func createSpinnerView() {
-        let child = SpinnerViewController()
-        
-        // add the spinner view controller
-        addChild(child)
-        child.view.frame = view.frame
-        view.addSubview(child.view)
-        child.didMove(toParent: self)
-        
-        // wait two seconds to simulate some work happening
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            // then remove the spinner view controller
-            child.willMove(toParent: nil)
-            child.view.removeFromSuperview()
-            child.removeFromParent()
-        }
+        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.color = .white
+        activityIndicator.frame = CGRect(x: view.center.x - 10, y: logoImage.bottom + 40, width: 20, height: 20)
+        activityIndicator.startAnimating()
+        view.addSubview(activityIndicator)
+        //spinner.hudView.frame = CGRect(x: view.center.x, y: view.center.y - 120, width: 50, height: 50)
+        //spinner.show(in: view)
     }
     
     // MARK: - Checking Credentials
@@ -103,14 +78,17 @@ class LoadingViewController: UIViewController {
         return false
     }
     
+    func delay(_ delay:Double, closure:@escaping ()->()) {
+        let when = DispatchTime.now() + delay
+        DispatchQueue.main.asyncAfter(deadline: when, execute: closure)
+    }
+    
     func showLoginIfNecessary() {
         let launchedBefore = checkForLaunchHistory()
         let loggedIn = checkForLoginHistory()
         
         if launchedBefore == false || loggedIn == false {
             print("User is not set up, showing login screen")
-            
-            createSpinnerView()
             
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1), execute: {
                 let storyboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
@@ -129,6 +107,12 @@ class LoadingViewController: UIViewController {
             DatabaseManager.shared.checkIfAccountIsDisabled(completion: { [weak self] success in
                 if success {
                     print("User is already set up, no login process needed")
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1), execute: {
+                        let storyboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                        let onboarding = storyboard.instantiateViewController(withIdentifier: "tabBarController") as! TabBarController
+                        self?.navigationController?.pushViewController(onboarding, animated: true)
+                    })
                 } else {
                     let alert = UIAlertController(title: "Account disabled", message: "Your account has been disabled. All application activity will be suspended until the account is re-enabled.", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
